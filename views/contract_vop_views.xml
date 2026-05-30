@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <record id="view_contract_vop_form" model="ir.ui.view">
+        <field name="name">setraco.contract.vop.form</field>
+        <field name="model">setraco.contract.vop</field>
+        <field name="arch" type="xml">
+            <form string="Variation of Price (VOP)">
+                <header>
+                    <button name="action_submit_to_contract" string="Submit to Contract Dept"
+                            type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve"
+                            type="object" class="btn-success" invisible="state != 'submitted'"
+                            groups="contract_management.group_contract_head"/>
+                    <button name="action_reject" string="Reject"
+                            type="object" class="btn-danger" invisible="state != 'submitted'"
+                            groups="contract_management.group_contract_head"/>
+                    <button name="action_update_boq" string="Update BOQ"
+                            type="object" class="btn-success" invisible="state != 'approved'"/>
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="draft,submitted,approved,boq_updated"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Contract &amp; Type">
+                            <field name="agreement_id"/>
+                            <field name="vop_type"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                        </group>
+                        <group string="Dates">
+                            <field name="date_raised"/>
+                            <field name="date_submitted" invisible="state == 'draft'"/>
+                            <field name="date_client_response"
+                                invisible="state not in ('approved','rejected','boq_updated')"/>
+                            <field name="client_delay_days"
+                                invisible="vop_type != 'client_delay'"/>
+                        </group>
+                    </group>
+                    <group string="Justification">
+                        <field name="description" nolabel="1"/>
+                    </group>
+                    <notebook>
+                        <page string="VOP Line Items">
+                            <field name="vop_line_ids">
+                                <tree editable="bottom">
+                                    <field name="boq_item"/>
+                                    <field name="original_rate" widget="monetary"/>
+                                    <field name="new_rate" widget="monetary"/>
+                                    <field name="quantity"/>
+                                    <field name="amount" widget="monetary" readonly="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="vop_amount" widget="monetary" readonly="1"
+                                    class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page string="Contract Value Impact">
+                            <group>
+                                <field name="original_amount" widget="monetary" readonly="1"/>
+                                <field name="vop_amount" widget="monetary" readonly="1"/>
+                                <field name="adjusted_contract_value" widget="monetary" readonly="1"/>
+                            </group>
+                        </page>
+                        <page string="Supporting Document">
+                            <field name="supporting_document" widget="binary"
+                                filename="supporting_document_filename"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_contract_vop_tree" model="ir.ui.view">
+        <field name="name">setraco.contract.vop.tree</field>
+        <field name="model">setraco.contract.vop</field>
+        <field name="arch" type="xml">
+            <tree string="VOP Records"
+                decoration-success="state=='boq_updated'"
+                decoration-danger="state=='rejected'">
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <field name="vop_type"/>
+                <field name="date_raised"/>
+                <field name="vop_amount" widget="monetary" sum="Total"/>
+                <field name="adjusted_contract_value" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_contract_vop" model="ir.actions.act_window">
+        <field name="name">Variation of Price (VOP)</field>
+        <field name="res_model">setraco.contract.vop</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    </data>
+</odoo>

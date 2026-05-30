@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+        CONTRACT AGREEMENT VIEWS
+    ════════════════════════════════════════════════════════════════════════ -->
+
+    <record id="view_contract_agreement_form" model="ir.ui.view">
+        <field name="name">setraco.contract.agreement.form</field>
+        <field name="model">setraco.contract.agreement</field>
+        <field name="arch" type="xml">
+            <form string="Contract Agreement">
+                <header>
+                    <button name="action_activate" string="Activate" type="object"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_start_claims" string="Start Claims Phase" type="object"
+                            class="btn-primary" invisible="state != 'active'"/>
+                    <button name="action_final_certificate" string="Issue Final Certificate"
+                            type="object" invisible="state != 'claims'"/>
+                    <button name="action_start_maintenance" string="Start Maintenance Period"
+                            type="object" invisible="state != 'final_cert'"/>
+                    <button name="action_close" string="Close Contract" type="object"
+                            class="btn-success" invisible="state != 'maintenance'"/>
+                    <button name="action_update_retc" string="Update RETC" type="object"
+                            invisible="state == 'closed'"/>
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="draft,active,claims,final_cert,maintenance,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_claims" icon="fa-certificate">
+                            <field name="claim_count" widget="statinfo" string="Claims"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Contract Details">
+                            <field name="tender_id"/>
+                            <field name="client_id"/>
+                            <field name="contract_value" widget="monetary"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="retc" widget="monetary"/>
+                        </group>
+                        <group string="Dates &amp; Site">
+                            <field name="date_signed"/>
+                            <field name="date_commencement"/>
+                            <field name="date_completion"/>
+                            <field name="site_location"/>
+                            <field name="maintenance_period_months"/>
+                            <field name="maintenance_end_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Project Management">
+                            <field name="project_id"/>
+                            <field name="project_manager_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group string="Cost Alert Settings">
+                            <field name="dry_cost_budget" widget="monetary"/>
+                            <field name="dry_cost_alert_threshold" widget="percentage"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Financial Summary">
+                            <group>
+                                <group string="Claims &amp; Payments">
+                                    <field name="total_claimed" widget="monetary" readonly="1"/>
+                                    <field name="total_certified" widget="monetary" readonly="1"/>
+                                    <field name="total_paid" widget="monetary" readonly="1"/>
+                                    <field name="balance_outstanding" widget="monetary" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="RETC History">
+                            <field name="retc_history_ids">
+                                <tree>
+                                    <field name="date"/>
+                                    <field name="previous_retc" widget="monetary"/>
+                                    <field name="new_retc" widget="monetary"/>
+                                    <field name="reason"/>
+                                    <field name="notes"/>
+                                    <field name="revised_by_id" widget="many2one_avatar_user"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Documents">
+                            <group>
+                                <field name="contract_document" widget="binary"
+                                    filename="contract_document_filename"/>
+                                <field name="program_of_works" widget="binary"
+                                    filename="program_of_works_filename"/>
+                            </group>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes" widget="html"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_contract_agreement_tree" model="ir.ui.view">
+        <field name="name">setraco.contract.agreement.tree</field>
+        <field name="model">setraco.contract.agreement</field>
+        <field name="arch" type="xml">
+            <tree string="Contract Agreements"
+                decoration-success="state=='closed'"
+                decoration-warning="state=='maintenance'">
+                <field name="name"/>
+                <field name="client_id"/>
+                <field name="site_location"/>
+                <field name="contract_value" widget="monetary" sum="Total"/>
+                <field name="retc" widget="monetary"/>
+                <field name="balance_outstanding" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="date_signed"/>
+                <field name="date_completion"/>
+                <field name="state" widget="badge"/>
+                <field name="project_manager_id" widget="many2one_avatar_user"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_contract_agreement" model="ir.actions.act_window">
+        <field name="name">Contract Agreements</field>
+        <field name="res_model">setraco.contract.agreement</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    </data>
+</odoo>

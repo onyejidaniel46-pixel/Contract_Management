@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ── Security Category ─────────────────────────────────────── -->
+        <record id="module_category_setraco_contract" model="ir.module.category">
+            <field name="name">Setraco / Contract</field>
+            <field name="description">Manage contract lifecycle for Setraco Nigeria Limited.</field>
+            <field name="sequence">100</field>
+        </record>
+
+        <!-- ── Groups ────────────────────────────────────────────────── -->
+
+        <!-- 1. Read-Only User -->
+        <record id="group_contract_user" model="res.groups">
+            <field name="name">Contract User</field>
+            <field name="category_id" ref="module_category_setraco_contract"/>
+            <field name="comment">Can view contracts, tenders, claims. Cannot create or approve.</field>
+        </record>
+
+        <!-- 2. Contract Officer (creates and manages day-to-day) -->
+        <record id="group_contract_officer" model="res.groups">
+            <field name="name">Contract Officer</field>
+            <field name="category_id" ref="module_category_setraco_contract"/>
+            <field name="implied_ids" eval="[(4, ref('group_contract_user'))]"/>
+            <field name="comment">Can create tenders, estimations, claims and VOPs.</field>
+        </record>
+
+        <!-- 3. Head of Contract (approves internally, submits to MD) -->
+        <record id="group_contract_head" model="res.groups">
+            <field name="name">Head of Contract</field>
+            <field name="category_id" ref="module_category_setraco_contract"/>
+            <field name="implied_ids" eval="[(4, ref('group_contract_officer'))]"/>
+            <field name="comment">Head of Contract — internal approvals and submission to MD.</field>
+        </record>
+
+        <!-- 4. Managing Director (final approvals) -->
+        <record id="group_contract_md" model="res.groups">
+            <field name="name">MD / Director</field>
+            <field name="category_id" ref="module_category_setraco_contract"/>
+            <field name="implied_ids" eval="[(4, ref('group_contract_head'))]"/>
+            <field name="comment">Managing Director — final approval authority on all contracts.</field>
+        </record>
+
+        <!-- 5. Administrator (full access + configuration) -->
+        <record id="group_contract_manager" model="res.groups">
+            <field name="name">Contract Administrator</field>
+            <field name="category_id" ref="module_category_setraco_contract"/>
+            <field name="implied_ids" eval="[(4, ref('group_contract_md'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+    </data>
+</odoo>

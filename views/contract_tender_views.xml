@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <!-- ── TENDER KANBAN ─────────────────────────────────────────────────── -->
+    <record id="view_contract_tender_kanban" model="ir.ui.view">
+        <field name="name">setraco.contract.tender.kanban</field>
+        <field name="model">setraco.contract.tender</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column">
+                <field name="name"/>
+                <field name="tender_title"/>
+                <field name="client_id"/>
+                <field name="contract_value"/>
+                <field name="state"/>
+                <field name="date_submission_deadline"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click">
+                            <div class="fw-bold">
+                                <field name="name"/> — <field name="tender_title"/>
+                            </div>
+                            <div class="text-muted small">
+                                <field name="client_id"/>
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge bg-info">
+                                    <field name="project_type"/>
+                                </span>
+                            </div>
+                            <div class="mt-1 text-end fw-bold">
+                                <field name="contract_value" widget="monetary"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ── TENDER TREE ───────────────────────────────────────────────────── -->
+    <record id="view_contract_tender_tree" model="ir.ui.view">
+        <field name="name">setraco.contract.tender.tree</field>
+        <field name="model">setraco.contract.tender</field>
+        <field name="arch" type="xml">
+            <tree string="Tenders" decoration-success="state=='handover'"
+                decoration-warning="state in ('md_review','negotiation')"
+                decoration-danger="state=='cancelled'">
+                <field name="name"/>
+                <field name="tender_title"/>
+                <field name="client_id"/>
+                <field name="project_type"/>
+                <field name="date_received"/>
+                <field name="date_submission_deadline"/>
+                <field name="contract_value" widget="monetary" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="state" widget="badge"
+                    decoration-success="state=='handover'"
+                    decoration-warning="state in ('md_review','loi_received')"
+                    decoration-info="state in ('received','data_collection','estimation')"
+                    decoration-danger="state=='cancelled'"/>
+                <field name="head_of_contract_id" widget="many2one_avatar_user"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ── TENDER FORM ───────────────────────────────────────────────────── -->
+    <record id="view_contract_tender_form" model="ir.ui.view">
+        <field name="name">setraco.contract.tender.form</field>
+        <field name="model">setraco.contract.tender</field>
+        <field name="arch" type="xml">
+            <form string="Contract Tender">
+                <header>
+                    <!-- Stage buttons -->
+                    <button name="action_send_to_md"
+                            string="Send to MD"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'received'"/>
+                    <button name="action_start_data_collection"
+                            string="Start Data Collection"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'md_instruction'"/>
+                    <button name="action_create_estimation"
+                            string="Create Estimation"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'data_collection' or not data_collection_complete"/>
+                    <button name="action_submit_for_md_review"
+                            string="Submit for MD Review"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'estimation'"/>
+                    <button name="action_md_approve_submit"
+                            string="MD Approve &amp; Submit to Client"
+                            type="object"
+                            class="btn-success"
+                            groups="contract_management.group_contract_md"
+                            invisible="state != 'md_review'"/>
+                    <button name="action_start_negotiation"
+                            string="Begin Negotiation"
+                            type="object"
+                            invisible="state != 'submitted'"/>
+                    <button name="action_record_loi"
+                            string="Record LOI Received"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'negotiation'"/>
+                    <button name="action_request_advance_payment"
+                            string="Request Advance Payment"
+                            type="object"
+                            invisible="state != 'loi_received'"/>
+                    <button name="action_confirm_advance_payment"
+                            string="Confirm Payment Received"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'advance_payment' or advance_payment_received"/>
+                    <button name="action_sign_contract"
+                            string="Sign Contract"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'advance_payment' or not advance_payment_received"/>
+                    <button name="action_handover_operations"
+                            string="Handover to Operations"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'contract_signed'"/>
+                    <button name="action_cancel"
+                            string="Cancel"
+                            type="object"
+                            class="btn-danger"
+                            invisible="state in ('handover','cancelled')"/>
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="received,md_instruction,data_collection,estimation,md_review,submitted,negotiation,loi_received,advance_payment,contract_signed,handover"/>
+                </header>
+
+                <sheet>
+                    <field name="estimation_id" invisible="1"/>
+                    <field name="agreement_id" invisible="1"/>
+                    <!-- Smart Buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_estimation"
+                                icon="fa-calculator"
+                                invisible="not estimation_id">
+                            <field name="estimation_count" widget="statinfo" string="Estimation"/>
+                        </button>
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_agreement"
+                                icon="fa-file-text-o"
+                                invisible="not agreement_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Agreement</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                        <h2>
+                            <field name="tender_title" placeholder="Tender Title..."/>
+                        </h2>
+                    </div>
+
+                    <group>
+                        <group string="Client &amp; Project">
+                            <field name="client_id"/>
+                            <field name="project_type"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="contract_value"/>
+                        </group>
+                        <group string="Key Dates">
+                            <field name="date_received"/>
+                            <field name="date_submission_deadline"/>
+                            <field name="date_tender_opening"/>
+                            <field name="md_instruction_date" invisible="state == 'received'"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Responsible">
+                            <field name="head_of_contract_id"/>
+                            <field name="md_user_id"/>
+                        </group>
+                        <group string="MD Instruction" invisible="state == 'received'">
+                            <field name="md_instruction_notes"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Tab 1: Data Collection -->
+                        <page string="Data Collection" invisible="state == 'received'">
+                            <group string="Departmental Data Received">
+                                <group>
+                                    <field name="cost_control_data" widget="boolean_toggle"/>
+                                    <field name="procurement_data" widget="boolean_toggle"/>
+                                    <field name="plant_data" widget="boolean_toggle"/>
+                                </group>
+                                <group>
+                                    <field name="personnel_data" widget="boolean_toggle"/>
+                                    <field name="operational_data" widget="boolean_toggle"/>
+                                    <field name="data_collection_complete" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 2: LOI & Advance Payment -->
+                        <page string="LOI &amp; Advance Payment"
+                            invisible="state not in ('loi_received','advance_payment','contract_signed','handover')">
+                            <group>
+                                <group string="Letter of Intent">
+                                    <field name="loi_date"/>
+                                    <field name="loi_document" widget="binary" filename="loi_filename"/>
+                                    <field name="loi_filename" invisible="1"/>
+                                </group>
+                                <group string="Advance Payment">
+                                    <field name="advance_payment_requested" widget="boolean_toggle"/>
+                                    <field name="advance_payment_amount"/>
+                                    <field name="advance_payment_received" widget="boolean_toggle"/>
+                                    <field name="advance_payment_date"/>
+                                    <field name="performance_guarantee" widget="boolean_toggle"/>
+                                    <field name="performance_guarantee_source"
+                                        invisible="not performance_guarantee"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 3: Notes / Description -->
+                        <page string="Notes">
+                            <field name="description" widget="html"/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ── TENDER SEARCH ─────────────────────────────────────────────────── -->
+    <record id="view_contract_tender_search" model="ir.ui.view">
+        <field name="name">setraco.contract.tender.search</field>
+        <field name="model">setraco.contract.tender</field>
+        <field name="arch" type="xml">
+            <search string="Search Tenders">
+                <field name="name" string="Reference"/>
+                <field name="tender_title"/>
+                <field name="client_id"/>
+                <field name="head_of_contract_id"/>
+                <separator/>
+                <filter string="My Tenders" name="my_tenders"
+                        domain="[('head_of_contract_id','=',uid)]"/>
+                <filter string="Active" name="active"
+                        domain="[('state','not in',['cancelled','handover'])]"/>
+                <filter string="Overdue Submission" name="overdue"
+                        domain="[('date_submission_deadline','&lt;',context_today().strftime('%Y-%m-%d')),('state','not in',['submitted','negotiation','loi_received','advance_payment','contract_signed','handover','cancelled'])]"/>
+                <separator/>
+                <group expand="0" string="Group By">
+                    <filter string="Stage" name="group_state" context="{'group_by':'state'}"/>
+                    <filter string="Client" name="group_client" context="{'group_by':'client_id'}"/>
+                    <filter string="Project Type" name="group_type" context="{'group_by':'project_type'}"/>
+                    <filter string="Month Received" name="group_month" context="{'group_by':'date_received:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ── TENDER ACTION ─────────────────────────────────────────────────── -->
+    <record id="action_contract_tender" model="ir.actions.act_window">
+        <field name="name">Tenders</field>
+        <field name="res_model">setraco.contract.tender</field>
+        <field name="view_mode">kanban,tree,form</field>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No tenders yet — create your first tender!
+            </p>
+            <p>
+                Manage the full lifecycle from tender notification to handover.
+            </p>
+        </field>
+    </record>
+
+            <!-- Action for All Tenders -->
+    <record id="action_contract_tender" model="ir.actions.act_window">
+    <field name="name">Tenders</field>
+    <field name="res_model">setraco.contract.tender</field>
+    <field name="view_mode">tree,form</field>
+</record>
+
+</data>
+</odoo>

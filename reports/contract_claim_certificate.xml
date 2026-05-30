@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <odoo>
+    <data>
+
+        <!-- ══════════════════════════════════════════════════════════════
+            CLAIMS CERTIFICATE — QWeb PDF Template
+            Triggered from: Print menu on setraco.contract.claim form
+            Circulated to: MD, Accounts, Projects, Cost Control, Tax Dept
+        ══════════════════════════════════════════════════════════════ -->
+        <template id="report_claim_certificate">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                    <h2 style="text-transform:uppercase;letter-spacing:2px;">
+                        <t t-if="doc.claim_type == 'interim'">Interim</t>
+                        <t t-else="">Final</t>
+                        Claims Certificate
+                    </h2>
+                    <h4>Certificate No. <t t-esc="doc.claim_number"/></h4>
+                    <p class="text-muted mb-0">
+                        Reference: <strong><t t-esc="doc.name"/></strong>
+                    </p>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <!-- Contract & Period Info -->
+                <div class="row mb-3">
+                    <div class="col-6">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                        <td class="fw-bold" style="width:45%;">Contract Ref:</td>
+                        <td><t t-esc="doc.agreement_id.name"/></td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Client:</td>
+                        <td><t t-esc="doc.client_id.name"/></td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Site Location:</td>
+                        <td><t t-esc="doc.agreement_id.site_location or '—'"/></td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Project Manager:</td>
+                        <td>
+                            <t t-esc="doc.agreement_id.project_manager_id.name or '—'"/>
+                        </td>
+                        </tr>
+                    </table>
+                    </div>
+                    <div class="col-6">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                        <td class="fw-bold" style="width:50%;">Period From:</td>
+                        <td>
+                            <t t-esc="doc.period_from"
+                            t-options='{"widget":"date"}'/>
+                        </td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Period To:</td>
+                        <td>
+                            <t t-esc="doc.period_to"
+                            t-options='{"widget":"date"}'/>
+                        </td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Date Submitted:</td>
+                        <td>
+                            <t t-esc="doc.date_submitted"
+                            t-options='{"widget":"date"}'/>
+                        </td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Payment Due:</td>
+                        <td>
+                            <t t-esc="doc.payment_due_date"
+                            t-options='{"widget":"date"}'/>
+                        </td>
+                        </tr>
+                    </table>
+                    </div>
+                </div>
+
+                <!-- Financial Summary -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                    <h5 class="mt-2 mb-2"
+                        style="background:#2d6a4f;color:#fff;padding:6px 10px;border-radius:4px;">
+                        Financial Summary
+                    </h5>
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th style="width:60%;">Description</th>
+                            <th class="text-end">Amount</th>
+                            <th>Notes</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Amount Claimed (This Period)</td>
+                            <td class="text-end">
+                            <t t-esc="doc.amount_claimed"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>As submitted by site</td>
+                        </tr>
+                        <tr>
+                            <td>Amount Certified by Client</td>
+                            <td class="text-end">
+                            <t t-esc="doc.amount_certified"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Client-approved value</td>
+                        </tr>
+                        <tr>
+                            <td>Retention Withheld</td>
+                            <td class="text-end" style="color:#dc3545;">
+                            (<t t-esc="doc.retention_amount"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>)
+                            </td>
+                            <td>Held per contract terms</td>
+                        </tr>
+                        <tr class="fw-bold table-success">
+                            <td>Net Payable</td>
+                            <td class="text-end">
+                            <t t-esc="doc.net_payable"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Certified less retention</td>
+                        </tr>
+                        <t t-if="doc.amount_paid">
+                            <tr>
+                            <td>Amount Paid</td>
+                            <td class="text-end">
+                                <t t-esc="doc.amount_paid"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>
+                                <t t-if="doc.date_paid">
+                                Paid on
+                                <t t-esc="doc.date_paid" t-options='{"widget":"date"}'/>
+                                </t>
+                            </td>
+                            </tr>
+                        </t>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+
+                <!-- Cost Split -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                    <h5 class="mt-2 mb-2"
+                        style="background:#2d6a4f;color:#fff;padding:6px 10px;border-radius:4px;">
+                        Cost Allocation (This Period)
+                    </h5>
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th style="width:60%;">Cost Type</th>
+                            <th class="text-end">Amount</th>
+                            <th>Allocation</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Dry Cost (Direct)</td>
+                            <td class="text-end">
+                            <t t-esc="doc.dry_cost_this_period"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Allocated directly to site</td>
+                        </tr>
+                        <tr>
+                            <td>Selling Cost (Indirect)</td>
+                            <td class="text-end">
+                            <t t-esc="doc.selling_cost_this_period"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Linked to this certificate</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+
+                <!-- Circulation Record -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                    <h5 class="mt-2 mb-2"
+                        style="background:#2d6a4f;color:#fff;padding:6px 10px;border-radius:4px;">
+                        Certificate Circulation
+                    </h5>
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Recipient</th>
+                            <th class="text-center">Circulated</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Managing Director (MD)</td>
+                            <td class="text-center">
+                            <t t-if="doc.circulated_to_md">✅</t>
+                            <t t-else="">—</t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Accounts Department</td>
+                            <td class="text-center">
+                            <t t-if="doc.circulated_to_accounts">✅</t>
+                            <t t-else="">—</t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Projects Department</td>
+                            <td class="text-center">
+                            <t t-if="doc.circulated_to_projects">✅</t>
+                            <t t-else="">—</t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Cost Control Department</td>
+                            <td class="text-center">
+                            <t t-if="doc.circulated_to_cost_control">✅</t>
+                            <t t-else="">—</t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Tax Department</td>
+                            <td class="text-center">
+                            <t t-if="doc.circulated_to_tax">✅</t>
+                            <t t-else="">—</t>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <t t-if="doc.notes">
+                    <div class="row mb-3">
+                    <div class="col-12">
+                        <h5 class="mt-2 mb-2"
+                            style="background:#2d6a4f;color:#fff;padding:6px 10px;border-radius:4px;">
+                        Description of Works
+                        </h5>
+                        <p><t t-esc="doc.notes"/></p>
+                    </div>
+                    </div>
+                </t>
+
+                <!-- Signature Block -->
+                <div class="row mt-5">
+                    <div class="col-3 text-center">
+                    <div style="border-top:1px solid #333;margin-top:50px;padding-top:6px;">
+                        <strong>Project Manager</strong><br/>
+                        <small>
+                        <t t-esc="doc.agreement_id.project_manager_id.name or '________________'"/>
+                        </small>
+                    </div>
+                    </div>
+                    <div class="col-3 text-center">
+                    <div style="border-top:1px solid #333;margin-top:50px;padding-top:6px;">
+                        <strong>Head of Contract</strong><br/>
+                        <small>________________</small>
+                    </div>
+                    </div>
+                    <div class="col-3 text-center">
+                    <div style="border-top:1px solid #333;margin-top:50px;padding-top:6px;">
+                        <strong>Client Representative</strong><br/>
+                        <small>________________</small>
+                    </div>
+                    </div>
+                    <div class="col-3 text-center">
+                    <div style="border-top:1px solid #333;margin-top:50px;padding-top:6px;">
+                        <strong>Date</strong><br/>
+                        <small>________________</small>
+                    </div>
+                    </div>
+                </div>
+
+                </div><!-- /page -->
+            </t>
+            </t>
+        </t>
+        </template>
+
+    </data>
+    </odoo>

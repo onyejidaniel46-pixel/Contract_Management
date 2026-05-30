@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <odoo>
+    <data>
+
+        <!-- ══════════════════════════════════════════════════════════════
+            TENDER DOCUMENT — QWeb PDF Template
+            Triggered from: Print menu on setraco.contract.tender form
+        ══════════════════════════════════════════════════════════════ -->
+        <template id="report_tender_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+            <t t-call="web.external_layout">
+                <div class="page">
+
+                <!-- Header -->
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                    <h2 style="text-transform:uppercase; letter-spacing:2px;">
+                        Tender Document
+                    </h2>
+                    <h3><t t-esc="doc.tender_title"/></h3>
+                    <p class="text-muted mb-0">
+                        Reference: <strong><t t-esc="doc.name"/></strong>
+                    </p>
+                    </div>
+                </div>
+
+                <hr/>
+
+                <!-- Client & Project Info -->
+                <div class="row mb-3">
+                    <div class="col-6">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                        <td class="fw-bold" style="inline-size:45%;">Client / Ministry:</td>
+                        <td><t t-esc="doc.client_id.name"/></td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Project Type:</td>
+                        <td><t t-esc="doc.project_type"/></td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Head of Contract:</td>
+                        <td><t t-esc="doc.head_of_contract_id.name"/></td>
+                        </tr>
+                    </table>
+                    </div>
+                    <div class="col-6">
+                    <table class="table table-sm table-borderless">
+                        <tr>
+                        <td class="fw-bold" style="inline-size:50%;">Date Received:</td>
+                        <td>
+                            <t t-esc="doc.date_received"
+                            t-options='{"widget": "date"}'/>
+                        </td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Submission Deadline:</td>
+                        <td>
+                            <t t-esc="doc.date_submission_deadline"
+                            t-options='{"widget": "date"}'/>
+                        </td>
+                        </tr>
+                        <tr>
+                        <td class="fw-bold">Tender Opening:</td>
+                        <td>
+                            <t t-esc="doc.date_tender_opening"
+                            t-options='{"widget": "date"}'/>
+                        </td>
+                        </tr>
+                    </table>
+                    </div>
+                </div>
+
+                <!-- Data Collection Status -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                    <h5 class="mt-2 mb-2"
+                        style="background:#2d6a4f;color:#fff;padding:6px 10px;border-radius:4px;">
+                        Departmental Data Collection
+                    </h5>
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Department</th>
+                            <th class="text-center">Data Received</th>
+                            <th>Data Type</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Cost Control Department</td>
+                            <td class="text-center">
+                            <t t-if="doc.cost_control_data">✅</t>
+                            <t t-else="">❌</t>
+                            </td>
+                            <td>Crucial cost data</td>
+                        </tr>
+                        <tr>
+                            <td>Procurement Department</td>
+                            <td class="text-center">
+                            <t t-if="doc.procurement_data">✅</t>
+                            <t t-else="">❌</t>
+                            </td>
+                            <td>Market prices (BOQ)</td>
+                        </tr>
+                        <tr>
+                            <td>Plant Department</td>
+                            <td class="text-center">
+                            <t t-if="doc.plant_data">✅</t>
+                            <t t-else="">❌</t>
+                            </td>
+                            <td>Equipment rates</td>
+                        </tr>
+                        <tr>
+                            <td>Personnel Department</td>
+                            <td class="text-center">
+                            <t t-if="doc.personnel_data">✅</t>
+                            <t t-else="">❌</t>
+                            </td>
+                            <td>Labour rates</td>
+                        </tr>
+                        <tr>
+                            <td>Operations</td>
+                            <td class="text-center">
+                            <t t-if="doc.operational_data">✅</t>
+                            <t t-else="">❌</t>
+                            </td>
+                            <td>Operational costs</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+
+                <!-- Cost Estimation Summary -->
+                <t t-if="doc.estimation_id">
+                    <div class="row mb-3">
+                    <div class="col-12">
+                        <h5 class="mt-2 mb-2"
+                            style="background:#2d6a4f;color:#fff;padding:6px 10px;border-radius:4px;">
+                        Cost Estimation Summary
+                        (Ref: <t t-esc="doc.estimation_id.name"/>)
+                        </h5>
+                        <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                            <th>Cost Category</th>
+                            <th class="text-end">Amount</th>
+                            <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td>Bill of Quantities — Materials (BOQ)</td>
+                            <td class="text-end">
+                                <t t-esc="doc.estimation_id.total_boq"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Dry Cost</td>
+                            </tr>
+                            <tr>
+                            <td>Labour Costs</td>
+                            <td class="text-end">
+                                <t t-esc="doc.estimation_id.total_labour"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Dry Cost</td>
+                            </tr>
+                            <tr>
+                            <td>Equipment / Plant Rates</td>
+                            <td class="text-end">
+                                <t t-esc="doc.estimation_id.total_equipment"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Dry Cost</td>
+                            </tr>
+                            <tr class="fw-bold table-light">
+                            <td>Total Dry Cost (Direct)</td>
+                            <td class="text-end">
+                                <t t-esc="doc.estimation_id.total_dry_cost"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Allocated to site</td>
+                            </tr>
+                            <tr>
+                            <td>Operational / Indirect Costs</td>
+                            <td class="text-end">
+                                <t t-esc="doc.estimation_id.total_selling_cost"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Selling Cost (linked to claims)</td>
+                            </tr>
+                            <tr class="fw-bold">
+                            <td>Grand Total (RETC)</td>
+                            <td class="text-end">
+                                <t t-esc="doc.estimation_id.grand_total"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Revised Estimated Total Cost</td>
+                            </tr>
+                            <tr>
+                            <td>Markup</td>
+                            <td class="text-end">
+                                <t t-esc="doc.estimation_id.markup_percent"/>%
+                            </td>
+                            <td></td>
+                            </tr>
+                            <tr class="fw-bold table-success">
+                            <td>Tender Price (Submitted)</td>
+                            <td class="text-end">
+                                <t t-esc="doc.estimation_id.tender_price"
+                                t-options='{"widget":"monetary","display_currency":doc.currency_id}'/>
+                            </td>
+                            <td>Including markup</td>
+                            </tr>
+                        </tbody>
+                        </table>
+                    </div>
+                    </div>
+                </t>
+
+                <!-- MD Notes -->
+                <t t-if="doc.md_instruction_notes">
+                    <div class="row mb-3">
+                    <div class="col-12">
+                        <h5 class="mt-2 mb-2"
+                            style="background:#2d6a4f;color:#fff;padding:6px 10px;border-radius:4px;">
+                        MD Instructions
+                        </h5>
+                        <p><t t-esc="doc.md_instruction_notes"/></p>
+                    </div>
+                    </div>
+                </t>
+
+                <!-- Signature Block -->
+                <div class="row mt-5">
+                    <div class="col-4 text-center">
+                    <div style="border-top:1px solid #333;margin-top:50px;padding-top:6px;">
+                        <strong>Head of Contract</strong><br/>
+                        <small><t t-esc="doc.head_of_contract_id.name"/></small>
+                    </div>
+                    </div>
+                    <div class="col-4 text-center">
+                    <div style="border-top:1px solid #333;margin-top:50px;padding-top:6px;">
+                        <strong>Managing Director</strong><br/>
+                        <small><t t-esc="doc.md_user_id.name or ''"/></small>
+                    </div>
+                    </div>
+                    <div class="col-4 text-center">
+                    <div style="border-top:1px solid #333;margin-top:50px;padding-top:6px;">
+                        <strong>Date</strong><br/>
+                        <small>________________</small>
+                    </div>
+                    </div>
+                </div>
+
+                </div><!-- /page -->
+            </t>
+            </t>
+        </t>
+        </template>
+
+    </data>
+    </odoo>

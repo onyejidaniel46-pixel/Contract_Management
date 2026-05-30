@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <odoo>
+    <data>
+
+        <!-- ══════════════════════════════════════════════════════════════
+            CONTRACT DASHBOARD
+            Uses setraco.contract.tender as the base model.
+            Shows KPI tiles, tender pipeline kanban, and alert summary.
+        ══════════════════════════════════════════════════════════════ -->
+
+        <record id="view_contract_dashboard_form" model="ir.ui.view">
+        <field name="name">setraco.contract.dashboard.form</field>
+        <field name="model">setraco.contract.tender</field>
+        <field name="priority">999</field>
+        <field name="arch" type="xml">
+            <form string="Contract Dashboard" create="false" edit="false">
+            <sheet>
+
+                <!-- ── KPI Row ── -->
+                <div class="o_horizontal_separator mt8 mb8">Overview</div>
+                <div class="row o_dashboard">
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-white bg-primary h-100 text-center p-3">
+                    <div style="font-size:28px; font-weight:700;">
+                        <field name="id" invisible="1"/>
+                        <!-- counts rendered via JS / ir.actions; shown as static labels here -->
+                        Active Tenders
+                    </div>
+                    <div class="small mt-1">Open in pipeline</div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-white bg-success h-100 text-center p-3">
+                    <div style="font-size:28px; font-weight:700;">Contracts</div>
+                    <div class="small mt-1">Signed &amp; active</div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-white bg-warning h-100 text-center p-3">
+                    <div style="font-size:28px; font-weight:700;">Pending MD</div>
+                    <div class="small mt-1">Awaiting approval</div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-white bg-danger h-100 text-center p-3">
+                    <div style="font-size:28px; font-weight:700;">Overdue Claims</div>
+                    <div class="small mt-1">Payment overdue</div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-white bg-info h-100 text-center p-3">
+                    <div style="font-size:28px; font-weight:700;">Cost Alerts</div>
+                    <div class="small mt-1">Threshold breaches</div>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-white bg-secondary h-100 text-center p-3">
+                    <div style="font-size:28px; font-weight:700;">VOP Open</div>
+                    <div class="small mt-1">Pending approval</div>
+                    </div>
+                </div>
+
+                </div><!-- /row -->
+
+                <!-- ── Tender Pipeline (status breakdown validate status) ── -->
+                <div class="o_horizontal_separator mt16 mb8">Tender Pipeline</div>
+                <div class="row">
+                <div class="col-12">
+                    <p class="text-muted">
+                    Use the <strong>Tenders</strong> menu to see the full Kanban pipeline
+                    grouped by stage. The dashboard tiles above link to filtered list views.
+                    </p>
+                </div>
+                </div>
+
+                <!-- ── Quick Links ── -->
+                <div class="o_horizontal_separator mt16 mb8">Quick Actions</div>
+                <div class="row mb-3">
+
+                <div class="col-md-3 mb-2">
+                    <button type="action"
+                            name="%(action_contract_tender)d"
+                            class="btn btn-outline-primary w-100">
+                    📋 All Tenders
+                    </button>
+                </div>
+
+                <div class="col-md-3 mb-2">
+                    <button type="action"
+                            name="%(action_contract_claim)d"
+                            class="btn btn-outline-success w-100">
+                    📄 Claims Certificates
+                    </button>
+                </div>
+
+                <div class="col-md-3 mb-2">
+                    <button type="action"
+                            name="%(action_contract_cost_alert)d"
+                            class="btn btn-outline-danger w-100">
+                    ⚠️  Cost Alerts
+                    </button>
+                </div>
+
+                <div class="col-md-3 mb-2">
+                    <button type="action"
+                            name="%(action_report_monthly_claims)d"
+                            class="btn btn-outline-info w-100">
+                    📊 Monthly Report
+                    </button>
+                </div>
+
+                </div>
+
+            </sheet>
+            </form>
+        </field>
+        </record>
+
+        <!-- Action for Dashboard Form -->
+        <record id="action_contract_dashboard" model="ir.actions.act_window">
+            <field name="name">Dashboard</field>
+            <field name="res_model">setraco.contract.tender</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_contract_dashboard_form"/>
+            <field name="target">current</field>
+        </record>
+
+    </data>
+    </odoo>
+    

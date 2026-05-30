@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <record id="view_contract_claim_form" model="ir.ui.view">
+        <field name="name">setraco.contract.claim.form</field>
+        <field name="model">setraco.contract.claim</field>
+        <field name="arch" type="xml">
+            <form string="Claims Certificate">
+                <header>
+                    <button name="action_submit_to_client" string="Submit to Client"
+                            type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_mark_certified" string="Mark Certified"
+                            type="object" class="btn-success" invisible="state != 'submitted'"/>
+                    <button name="action_mark_paid" string="Mark Paid"
+                            type="object" class="btn-success" invisible="state != 'certified'"/>
+                    <button name="action_mark_disputed" string="Mark Disputed"
+                            type="object" class="btn-danger"
+                            invisible="state not in ('submitted','certified')"/>
+                    <field name="state" widget="statusbar"
+                        statusbar_visible="draft,submitted,certified,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object"
+                                name="action_view_invoice"
+                                icon="fa-pencil-square-o"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Invoice</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <h3>Claim No. <field name="claim_number"/> —
+                            <field name="claim_type"/></h3>
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                        invisible="not is_overdue">
+                        ⚠️ Payment is <field name="days_overdue"/> days overdue!
+                    </div>
+                    <group>
+                        <group string="Contract">
+                            <field name="agreement_id"/>
+                            <field name="client_id" readonly="1"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="invoice_id" readonly="1" invisible="not invoice_id"/>
+                        </group>
+                        <group string="Period">
+                            <field name="period_from"/>
+                            <field name="period_to"/>
+                            <field name="payment_due_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Amounts">
+                            <field name="amount_claimed" widget="monetary"/>
+                            <field name="amount_certified" widget="monetary"
+                                invisible="state == 'draft'"/>
+                            <field name="retention_amount" widget="monetary"
+                                invisible="state == 'draft'"/>
+                            <field name="net_payable" widget="monetary" readonly="1"
+                                invisible="state == 'draft'"/>
+                            <field name="amount_paid" widget="monetary"
+                                invisible="state not in ('paid',)"/>
+                        </group>
+                        <group string="Cost Split">
+                            <field name="dry_cost_this_period" widget="monetary"/>
+                            <field name="selling_cost_this_period" widget="monetary"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Dates">
+                            <group>
+                                <field name="date_submitted" invisible="state == 'draft'"/>
+                                <field name="date_certified" invisible="state not in ('certified','paid')"/>
+                                <field name="date_paid" invisible="state != 'paid'"/>
+                                <field name="is_overdue" readonly="1" widget="boolean"/>
+                                <field name="days_overdue" readonly="1" invisible="not is_overdue"/>
+                            </group>
+                        </page>
+                        <page string="Circulation">
+                            <group string="Certificate Circulated To">
+                                <field name="circulated_to_md" widget="boolean_toggle"/>
+                                <field name="circulated_to_accounts" widget="boolean_toggle"/>
+                                <field name="circulated_to_projects" widget="boolean_toggle"/>
+                                <field name="circulated_to_cost_control" widget="boolean_toggle"/>
+                                <field name="circulated_to_tax" widget="boolean_toggle"/>
+                            </group>
+                        </page>
+                        <page string="Notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_contract_claim_tree" model="ir.ui.view">
+        <field name="name">setraco.contract.claim.tree</field>
+        <field name="model">setraco.contract.claim</field>
+        <field name="arch" type="xml">
+            <tree string="Claims Certificates"
+                decoration-danger="is_overdue"
+                decoration-success="state=='paid'">
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <field name="client_id"/>
+                <field name="claim_number"/>
+                <field name="claim_type"/>
+                <field name="period_from"/>
+                <field name="period_to"/>
+                <field name="amount_claimed" widget="monetary" sum="Total Claimed"/>
+                <field name="amount_certified" widget="monetary" sum="Total Certified"/>
+                <field name="amount_paid" widget="monetary" sum="Total Paid"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="payment_due_date"/>
+                <field name="is_overdue" widget="boolean"/>
+                <field name="state" widget="badge"
+                    decoration-success="state=='paid'"
+                    decoration-warning="state=='certified'"
+                    decoration-danger="state=='disputed'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_contract_claim_search" model="ir.ui.view">
+        <field name="name">setraco.contract.claim.search</field>
+        <field name="model">setraco.contract.claim</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="agreement_id"/>
+                <field name="client_id"/>
+                <filter string="Overdue" name="overdue" domain="[('is_overdue','=',True)]"/>
+                <filter string="Pending Payment" name="pending"
+                        domain="[('state','in',('submitted','certified'))]"/>
+                <filter string="Paid" name="paid" domain="[('state','=','paid')]"/>
+                <group expand="0" string="Group By">
+                    <filter string="Contract" name="group_agreement"
+                            context="{'group_by':'agreement_id'}"/>
+                    <filter string="Status" name="group_state"
+                            context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_contract_claim" model="ir.actions.act_window">
+        <field name="name">Claims Certificates</field>
+        <field name="res_model">setraco.contract.claim</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+    </record>
+
+    </data>
+</odoo>

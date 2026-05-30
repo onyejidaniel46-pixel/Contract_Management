@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data>
+
+        <!-- ══════════════════════════════════════════════════════════════
+        ROOT APPLICATION MENU
+        ══════════════════════════════════════════════════════════════ -->
+        <menuitem id="menu_setraco_contract_root"
+                name="Contract"
+                sequence="50"/>
+
+        <!-- ══════════════════════════════════════════════════════════════
+        DASHBOARD
+        ══════════════════════════════════════════════════════════════ -->
+        <menuitem id="menu_contract_dashboard"
+                name="Dashboard"
+                parent="menu_setraco_contract_root"
+                action="action_contract_dashboard"
+                sequence="1"/>
+
+        <!-- ══════════════════════════════════════════════════════════════
+        TENDERING
+        ══════════════════════════════════════════════════════════════ -->
+        <menuitem id="menu_setraco_contract_tendering"
+                name="Tendering"
+                parent="menu_setraco_contract_root"
+                sequence="10"/>
+
+        <menuitem id="menu_contract_tender"
+                name="Tenders"
+                parent="menu_setraco_contract_tendering"
+                action="action_contract_tender"
+                sequence="10"/>
+
+        <menuitem id="menu_contract_estimation"
+                name="Estimations (BOQ / Costing)"
+                parent="menu_setraco_contract_tendering"
+                action="action_contract_estimation"
+                sequence="20"/>
+
+        <!-- ══════════════════════════════════════════════════════════════
+        CONTRACTS
+        ══════════════════════════════════════════════════════════════ -->
+        <menuitem id="menu_setraco_contract_contracts"
+                name="Contracts"
+                parent="menu_setraco_contract_root"
+                sequence="20"/>
+
+        <menuitem id="menu_contract_agreement"
+                name="Contract Agreements"
+                parent="menu_setraco_contract_contracts"
+                action="action_contract_agreement"
+                sequence="10"/>
+
+        <menuitem id="menu_contract_claim"
+                name="Claims Certificates"
+                parent="menu_setraco_contract_contracts"
+                action="action_contract_claim"
+                sequence="20"/>
+
+        <menuitem id="menu_contract_vop"
+                name="Variation of Price (VOP)"
+                parent="menu_setraco_contract_contracts"
+                action="action_contract_vop"
+                sequence="30"/>
+
+        <!-- ══════════════════════════════════════════════════════════════
+        COST MONITORING
+        ══════════════════════════════════════════════════════════════ -->
+        <menuitem id="menu_setraco_contract_cost"
+                name="Cost Monitoring"
+                parent="menu_setraco_contract_root"
+                sequence="30"/>
+
+        <menuitem id="menu_contract_cost_alert"
+                name="Cost Alerts"
+                parent="menu_setraco_contract_cost"
+                action="action_contract_cost_alert"
+                sequence="10"/>
+
+        <!-- ══════════════════════════════════════════════════════════════
+        REPORTS
+        ══════════════════════════════════════════════════════════════ -->
+        <menuitem id="menu_setraco_contract_reports"
+                name="Reports"
+                parent="menu_setraco_contract_root"
+                sequence="40"/>
+
+        <menuitem id="menu_report_monthly_claims"
+                name="Monthly Claims Report"
+                parent="menu_setraco_contract_reports"
+                action="action_report_monthly_claims"
+                sequence="10"/>
+
+        <menuitem id="menu_report_vop_summary"
+                name="VOP Summary Report"
+                parent="menu_setraco_contract_reports"
+                action="action_report_vop_summary"
+                sequence="20"/>
+
+        <menuitem id="menu_report_cost_alerts"
+                name="Cost Alert Report"
+                parent="menu_setraco_contract_reports"
+                action="action_report_cost_alerts"
+                sequence="30"/>
+
+        <!-- ══════════════════════════════════════════════════════════════
+        CONFIGURATION  (Admin only)
+        ══════════════════════════════════════════════════════════════ -->
+        <menuitem id="menu_setraco_contract_config"
+                name="Configuration"
+                parent="menu_setraco_contract_root"
+                sequence="99"
+                groups="group_contract_manager"/>
+
+</data>
+        </odoo>

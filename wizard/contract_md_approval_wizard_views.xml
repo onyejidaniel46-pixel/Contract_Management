@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <odoo>
+    <data>
+
+        <!-- ══════════════════════════════════════════════════════════════
+            MD APPROVAL WIZARD — View
+        ══════════════════════════════════════════════════════════════ -->
+        <record id="view_contract_md_approval_wizard_form" model="ir.ui.view">
+        <field name="name">setraco.contract.md.approval.wizard.form</field>
+        <field name="model">setraco.contract.md.approval.wizard</field>
+        <field name="arch" type="xml">
+            <form string="MD Approval Decision">
+            <group string="Tender Details">
+                <field name="tender_id" readonly="1"/>
+            </group>
+            <group string="Decision">
+                <field name="action" widget="radio"/>
+            </group>
+            <group string="Notes / Instructions">
+                <field name="notes"
+                    nolabel="1"
+                    placeholder="Add any instructions or comments for the Contract Team..."/>
+            </group>
+            <footer>
+                <button name="action_confirm"
+                        string="Confirm Decision"
+                        type="object"
+                        class="btn-primary"/>
+                <button string="Cancel"
+                        class="btn-secondary"
+                        special="cancel"/>
+            </footer>
+            </form>
+        </field>
+        </record>
+
+        <!-- Action to open the wizard (called from tender form button) -->
+        <record id="action_contract_md_approval_wizard" model="ir.actions.act_window">
+        <field name="name">MD Approval</field>
+        <field name="res_model">setraco.contract.md.approval.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_contract_md_approval_wizard_form"/>
+        <field name="target">new</field>
+        </record>
+
+    </data>
+    </odoo>

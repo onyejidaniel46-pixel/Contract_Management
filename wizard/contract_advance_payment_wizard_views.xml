@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <odoo>
+    <data>
+
+        <!-- ══════════════════════════════════════════════════════════════
+            ADVANCE PAYMENT WIZARD — View
+        ══════════════════════════════════════════════════════════════ -->
+        <record id="view_contract_advance_payment_wizard_form" model="ir.ui.view">
+        <field name="name">setraco.contract.advance.payment.wizard.form</field>
+        <field name="model">setraco.contract.advance.payment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Confirm Advance Payment Received">
+            <group string="Tender">
+                <field name="tender_id" readonly="1"/>
+            </group>
+            <group string="Payment Details">
+                <field name="amount" widget="monetary"/>
+                <field name="payment_date"/>
+            </group>
+            <group string="Performance Guarantee">
+                <field name="guarantee_source" widget="radio"/>
+            </group>
+            <group string="Notes">
+                <field name="notes"
+                    nolabel="1"
+                    placeholder="Optional notes about the payment or guarantee..."/>
+            </group>
+            <footer>
+                <button name="action_confirm"
+                        string="Confirm Payment Received"
+                        type="object"
+                        class="btn-success"/>
+                <button string="Cancel"
+                        class="btn-secondary"
+                        special="cancel"/>
+            </footer>
+            </form>
+        </field>
+        </record>
+
+        <!-- Action to open the wizard (called from tender form button) -->
+        <record id="action_contract_advance_payment_wizard" model="ir.actions.act_window">
+        <field name="name">Confirm Advance Payment</field>
+        <field name="res_model">setraco.contract.advance.payment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_contract_advance_payment_wizard_form"/>
+        <field name="target">new</field>
+        </record>
+
+    </data>
+    </odoo>
