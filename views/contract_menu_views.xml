@@ -113,5 +113,33 @@
                 sequence="99"
                 groups="group_contract_manager"/>
 
+        <!-- Letter of Intent -->
+        <menuitem id="menu_contract_loi"
+                name="Letters of Intent"
+                parent="menu_setraco_contract_root"
+                action="contract_management.action_contract_loi"
+                sequence="30"/>
+
+        <!-- Advance Payments & Guarantees -->
+        <menuitem id="menu_contract_advance_payment"
+                name="Advance Payments &amp; Guarantees"
+                parent="menu_setraco_contract_root"
+                action="contract_management.action_contract_advance_payment"
+                sequence="40"/>
+
+        <!-- RETC -->
+        <menuitem id="menu_contract_retc"
+                name="Revised Estimated Total Cost"
+                parent="menu_setraco_contract_root"
+                action="contract_management.action_contract_retc"
+                sequence="50"/>
+
+        <!-- BOQ -->
+        <menuitem id="menu_contract_boq"
+                name="Bill of Quantities (BOQ)"
+                parent="menu_setraco_contract_root"
+                action="contract_management.action_contract_boq"
+                sequence="20"/>
+
 </data>
         </odoo>

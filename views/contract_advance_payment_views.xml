@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <data>
+
+            <!-- ══════════════════════════════════════════════════════════
+                TREE / LIST VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_advance_payment_tree" model="ir.ui.view">
+                <field name="name">setraco.contract.advance.payment.tree</field>
+                <field name="model">setraco.contract.advance.payment</field>
+                <field name="arch" type="xml">
+                    <tree string="Advance Payments &amp; Guarantees"
+                        decoration-success="state == 'complete'"
+                        decoration-warning="state in ['guarantee_pending','awaiting_payment']"
+                        decoration-danger="guarantee_expired == True"
+                        decoration-info="state == 'guarantee_obtained'">
+                        <field name="name"/>
+                        <field name="contract_id"/>
+                        <field name="client_id"/>
+                        <field name="advance_amount" sum="Total Advance"/>
+                        <field name="payment_received" widget="boolean_toggle"/>
+                        <field name="payment_date"/>
+                        <field name="guarantee_type"/>
+                        <field name="guarantee_expiry_date"/>
+                        <field name="guarantee_expired" invisible="1"/>
+                        <field name="state"
+                            widget="badge"
+                            decoration-success="state == 'complete'"
+                            decoration-warning="state in ['guarantee_pending','awaiting_payment']"
+                            decoration-info="state == 'guarantee_obtained'"/>
+                    </tree>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                FORM VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_advance_payment_form" model="ir.ui.view">
+                <field name="name">setraco.contract.advance.payment.form</field>
+                <field name="model">setraco.contract.advance.payment</field>
+                <field name="arch" type="xml">
+                    <form string="Advance Payment &amp; Performance Guarantee">
+
+                        <header>
+                            <button name="action_confirm_payment"
+                                    string="Confirm Payment Received"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state not in ['draft','awaiting_payment']"/>
+                            <button name="action_confirm_guarantee"
+                                    string="Confirm Guarantee Obtained"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state != 'guarantee_pending'"/>
+                            <button name="action_mark_complete"
+                                    string="Mark Complete"
+                                    type="object"
+                                    class="btn-success"
+                                    invisible="state not in ['payment_received','guarantee_obtained']"/>
+                            <field name="state"
+                                widget="statusbar"
+                                statusbar_visible="draft,awaiting_payment,payment_received,guarantee_pending,guarantee_obtained,complete"/>
+                        </header>
+
+                        <sheet>
+                            <!-- Expired Guarantee Alert -->
+                            <div class="alert alert-danger" role="alert"
+                                invisible="not guarantee_expired">
+                                ⚠️ The performance guarantee has <strong>expired</strong>. Please renew immediately.
+                            </div>
+
+                            <div class="oe_title">
+                                <h1>
+                                    <field name="name" readonly="1"/>
+                                </h1>
+                            </div>
+
+                            <group>
+                                <group string="Contract Reference">
+                                    <field name="contract_id"/>
+                                    <field name="loi_id"/>
+                                    <field name="client_id"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                            </group>
+
+                            <notebook>
+
+                                <!-- Advance Payment Tab -->
+                                <page string="Advance Payment">
+                                    <group>
+                                        <group string="Payment Details">
+                                            <field name="advance_amount"/>
+                                            <field name="payment_received"/>
+                                            <field name="payment_date"/>
+                                            <field name="payment_reference"/>
+                                            <field name="bank_name"/>
+                                        </group>
+                                    </group>
+                                </page>
+
+                                <!-- Performance Guarantee Tab -->
+                                <page string="Performance Guarantee">
+                                    <group>
+                                        <group string="Guarantee Details">
+                                            <field name="guarantee_required"/>
+                                            <field name="guarantee_type"
+                                                invisible="not guarantee_required"/>
+                                            <field name="guarantee_amount"
+                                                invisible="not guarantee_required"/>
+                                            <field name="guarantee_reference"
+                                                invisible="not guarantee_required"/>
+                                            <field name="guarantee_issuer"
+                                                invisible="not guarantee_required"/>
+                                        </group>
+                                        <group string="Validity">
+                                            <field name="guarantee_start_date"
+                                                invisible="not guarantee_required"/>
+                                            <field name="guarantee_expiry_date"
+                                                invisible="not guarantee_required"/>
+                                            <field name="guarantee_obtained"
+                                                invisible="not guarantee_required"/>
+                                            <field name="guarantee_expired"
+                                                invisible="not guarantee_required"/>
+                                        </group>
+                                    </group>
+                                </page>
+
+                                <!-- Notes & Documents Tab -->
+                                <page string="Notes">
+                                    <field name="notes" placeholder="Additional remarks..."/>
+                                </page>
+                                <page string="Documents">
+                                    <field name="document_ids" widget="many2many_binary"/>
+                                </page>
+
+                            </notebook>
+                        </sheet>
+
+                        <div class="oe_chatter">
+                            <field name="message_follower_ids"/>
+                            <field name="activity_ids"/>
+                            <field name="message_ids"/>
+                        </div>
+                    </form>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                SEARCH VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_advance_payment_search" model="ir.ui.view">
+                <field name="name">setraco.contract.advance.payment.search</field>
+                <field name="model">setraco.contract.advance.payment</field>
+                <field name="arch" type="xml">
+                    <search string="Search Advance Payments">
+                        <field name="name" string="Reference"/>
+                        <field name="contract_id"/>
+                        <field name="client_id"/>
+                        <!-- Filters -->
+                        <filter name="awaiting_payment"   string="Awaiting Payment"    domain="[('state','=','awaiting_payment')]"/>
+                        <filter name="payment_received"   string="Payment Received"    domain="[('payment_received','=',True)]"/>
+                        <filter name="guarantee_pending"  string="Guarantee Pending"   domain="[('state','=','guarantee_pending')]"/>
+                        <filter name="complete"           string="Complete"            domain="[('state','=','complete')]"/>
+                        <separator/>
+                        <filter name="expired_guarantee"  string="Expired Guarantees"  domain="[('guarantee_expired','=',True)]"/>
+                        <!-- Group By -->
+                        <group expand="0" string="Group By">
+                            <filter name="group_contract"       string="Contract"        context="{'group_by':'contract_id'}"/>
+                            <filter name="group_state"          string="Status"          context="{'group_by':'state'}"/>
+                            <filter name="group_guarantee_type" string="Guarantee Type"  context="{'group_by':'guarantee_type'}"/>
+                        </group>
+                    </search>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                WINDOW ACTION
+            ══════════════════════════════════════════════════════════ -->
+            <record id="action_contract_advance_payment" model="ir.actions.act_window">
+                <field name="name">Advance Payments &amp; Guarantees</field>
+                <field name="res_model">setraco.contract.advance.payment</field>
+                <field name="view_mode">tree,form</field>
+                <field name="search_view_id" ref="view_contract_advance_payment_search"/>
+                <field name="help" type="html">
+                    <p class="o_view_nocontent_smiling_face">
+                        No advance payment records yet.
+                    </p>
+                    <p>Create one after a Letter of Intent is accepted.</p>
+                </field>
+            </record>
+
+        </data>
+    </odoo>

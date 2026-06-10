@@ -125,7 +125,7 @@
         <!-- Action for Dashboard Form -->
         <record id="action_contract_dashboard" model="ir.actions.act_window">
             <field name="name">Dashboard</field>
-            <field name="res_model">setraco.contract.tender</field>
+            <field name="res_model">setraco.contract.Tender</field>
             <field name="view_mode">form</field>
             <field name="view_id" ref="view_contract_dashboard_form"/>
             <field name="target">current</field>
@@ -133,4 +133,3 @@
 
     </data>
     </odoo>
-    

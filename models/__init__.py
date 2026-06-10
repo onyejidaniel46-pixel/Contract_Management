@@ -9,3 +9,7 @@ from . import contract_loi
 from . import contract_advance_payment
 from . import contract_retc
 from . import contract_boq
+from . import contract_handover
+from . import contract_prequalification
+from . import contract_data_request
+from . import contract_dashboard

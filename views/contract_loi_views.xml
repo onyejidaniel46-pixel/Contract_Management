@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <data>
+
+            <!-- ══════════════════════════════════════════════════════════
+                TREE / LIST VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_loi_tree" model="ir.ui.view">
+                <field name="name">setraco.contract.loi.tree</field>
+                <field name="model">setraco.contract.loi</field>
+                <field name="arch" type="xml">
+                    <tree string="Letters of Intent"
+                        decoration-success="state == 'accepted'"
+                        decoration-warning="state == 'under_review'"
+                        decoration-danger="state == 'rejected'"
+                        decoration-info="state == 'advance_requested'">
+                        <field name="name"/>
+                        <field name="tender_id"/>
+                        <field name="client_id"/>
+                        <field name="date_received"/>
+                        <field name="date_deadline"/>
+                        <field name="loi_amount" sum="Total LOI Amount"/>
+                        <field name="advance_payment_requested"/>
+                        <field name="state"
+                            widget="badge"
+                            decoration-success="state == 'accepted'"
+                            decoration-warning="state == 'under_review'"
+                            decoration-danger="state == 'rejected'"
+                            decoration-info="state == 'advance_requested'"/>
+                    </tree>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                FORM VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_loi_form" model="ir.ui.view">
+                <field name="name">setraco.contract.loi.form</field>
+                <field name="model">setraco.contract.loi</field>
+                <field name="arch" type="xml">
+                    <form string="Letter of Intent">
+
+                        <!-- Status Bar -->
+                        <header>
+                            <button name="action_review"
+                                    string="Mark Under Review"
+                                    type="object"
+                                    class="btn-secondary"
+                                    invisible="state not in ['received']"/>
+                            <button name="action_accept"
+                                    string="Accept LOI"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state not in ['received', 'under_review']"/>
+                            <button name="action_request_advance_payment"
+                                    string="Request Advance Payment"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state != 'accepted'"/>
+                            <button name="action_reject"
+                                    string="Reject"
+                                    type="object"
+                                    class="btn-danger"
+                                    invisible="state in ['rejected', 'advance_requested']"/>
+                            <field name="state"
+                                widget="statusbar"
+                                statusbar_visible="received,under_review,accepted,advance_requested"/>
+                        </header>
+
+                        <sheet>
+                            <!-- Title Row -->
+                            <div class="oe_title">
+                                <h1>
+                                    <field name="name" readonly="1"/>
+                                </h1>
+                            </div>
+
+                            <!-- Main Info -->
+                            <group>
+                                <group string="LOI Details">
+                                    <field name="tender_id"/>
+                                    <field name="contract_id"/>
+                                    <field name="client_id"/>
+                                    <field name="date_received"/>
+                                    <field name="date_deadline"/>
+                                    <field name="date_accepted"
+                                        invisible="state not in ['accepted','advance_requested']"/>
+                                </group>
+                                <group string="Financial">
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="loi_amount"/>
+                                    <field name="advance_payment_requested"/>
+                                    <field name="advance_payment_amount"
+                                        invisible="not advance_payment_requested"/>
+                                    <field name="advance_payment_date"
+                                        invisible="not advance_payment_requested"/>
+                                </group>
+                            </group>
+
+                            <!-- Notes -->
+                            <notebook>
+                                <page string="Notes / Terms">
+                                    <field name="notes" placeholder="Enter terms, conditions, or remarks..."/>
+                                </page>
+                                <page string="Documents">
+                                    <field name="document_ids" widget="many2many_binary"/>
+                                </page>
+                            </notebook>
+                        </sheet>
+
+                        <!-- Chatter -->
+                        <div class="oe_chatter">
+                            <field name="message_follower_ids"/>
+                            <field name="activity_ids"/>
+                            <field name="message_ids"/>
+                        </div>
+                    </form>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                SEARCH VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_loi_search" model="ir.ui.view">
+                <field name="name">setraco.contract.loi.search</field>
+                <field name="model">setraco.contract.loi</field>
+                <field name="arch" type="xml">
+                    <search string="Search Letters of Intent">
+                        <field name="name" string="LOI Reference"/>
+                        <field name="tender_id"/>
+                        <field name="client_id"/>
+                        <!-- Filters -->
+                        <filter name="received"         string="Received"          domain="[('state','=','received')]"/>
+                        <filter name="under_review"     string="Under Review"      domain="[('state','=','under_review')]"/>
+                        <filter name="accepted"         string="Accepted"          domain="[('state','=','accepted')]"/>
+                        <filter name="advance_requested" string="Advance Requested" domain="[('state','=','advance_requested')]"/>
+                        <filter name="rejected"         string="Rejected"          domain="[('state','=','rejected')]"/>
+                        <separator/>
+                        <filter name="overdue" string="Overdue (Deadline Passed)"
+                                domain="[('date_deadline','&lt;',context_today().strftime('%Y-%m-%d')),('state','not in',['accepted','rejected','advance_requested'])]"/>
+                        <!-- Group By -->
+                        <group expand="0" string="Group By">
+                            <filter name="group_client"  string="Client"  context="{'group_by':'client_id'}"/>
+                            <filter name="group_tender"  string="Tender"  context="{'group_by':'tender_id'}"/>
+                            <filter name="group_state"   string="Status"  context="{'group_by':'state'}"/>
+                            <filter name="group_month"   string="Month Received" context="{'group_by':'date_received:month'}"/>
+                        </group>
+                    </search>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                WINDOW ACTION
+            ══════════════════════════════════════════════════════════ -->
+            <record id="action_contract_loi" model="ir.actions.act_window">
+                <field name="name">Letters of Intent</field>
+                <field name="res_model">setraco.contract.loi</field>
+                <field name="view_mode">tree,form</field>
+                <field name="search_view_id" ref="view_contract_loi_search"/>
+                <field name="help" type="html">
+                    <p class="o_view_nocontent_smiling_face">
+                        No Letters of Intent yet.
+                    </p>
+                    <p>Create a new LOI once a client sends one after tender negotiations.</p>
+                </field>
+            </record>
+
+        </data>
+    </odoo>

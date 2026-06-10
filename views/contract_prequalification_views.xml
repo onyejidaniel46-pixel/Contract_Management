@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- ══════════════════════════════════════════════════════════
+             TREE / LIST VIEW
+        ══════════════════════════════════════════════════════════ -->
+        <record id="view_contract_prequalification_tree" model="ir.ui.view">
+            <field name="name">setraco.contract.prequalification.tree</field>
+            <field name="model">setraco.contract.prequalification</field>
+            <field name="arch" type="xml">
+                <tree string="Pre-Qualification / Tender Documents"
+                      decoration-success="state == 'submitted_client'"
+                      decoration-primary="state == 'md_approved'"
+                      decoration-warning="state in ['submitted_md','under_review']"
+                      decoration-danger="state == 'md_rejected' or deadline_overdue == True"
+                      decoration-muted="state == 'draft'">
+                    <field name="name"/>
+                    <field name="document_type"/>
+                    <field name="tender_id"/>
+                    <field name="client_id"/>
+                    <field name="date_prepared"/>
+                    <field name="client_submission_deadline"/>
+                    <field name="deadline_overdue" invisible="1"/>
+                    <field name="tender_value" sum="Total Bid Value"/>
+                    <field name="all_data_received" widget="boolean_toggle" string="Data Ready"/>
+                    <field name="prepared_by"/>
+                    <field name="state"
+                           widget="badge"
+                           decoration-success="state == 'submitted_client'"
+                           decoration-primary="state == 'md_approved'"
+                           decoration-warning="state in ['submitted_md','under_review']"
+                           decoration-danger="state in ['md_rejected','revision']"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════════════
+             FORM VIEW
+        ══════════════════════════════════════════════════════════ -->
+        <record id="view_contract_prequalification_form" model="ir.ui.view">
+            <field name="name">setraco.contract.prequalification.form</field>
+            <field name="model">setraco.contract.prequalification</field>
+            <field name="arch" type="xml">
+                <form string="Pre-Qualification / Tender Document">
+
+                    <header>
+                        <button name="action_start_data_collection"
+                                string="Start Data Collection"
+                                type="object"
+                                class="btn-secondary"
+                                invisible="state != 'draft'"/>
+                        <button name="action_submit_for_review"
+                                string="Submit for Head of Contract Review"
+                                type="object"
+                                class="btn-secondary"
+                                invisible="state != 'data_collection'"/>
+                        <button name="action_submit_to_md"
+                                string="Submit to MD"
+                                type="object"
+                                class="btn-primary"
+                                invisible="state != 'under_review'"/>
+                        <button name="action_md_approve"
+                                string="MD: Approve"
+                                type="object"
+                                class="btn-success"
+                                groups="contract_management.group_contract_md"
+                                invisible="state != 'submitted_md'"/>
+                        <button name="action_request_revision"
+                                string="MD: Request Revision"
+                                type="object"
+                                class="btn-warning"
+                                groups="contract_management.group_contract_md"
+                                invisible="state != 'submitted_md'"/>
+                        <button name="action_md_reject"
+                                string="MD: Reject"
+                                type="object"
+                                class="btn-danger"
+                                groups="contract_management.group_contract_md"
+                                invisible="state != 'submitted_md'"/>
+                        <button name="action_submit_to_client"
+                                string="Submit to Client"
+                                type="object"
+                                class="btn-primary"
+                                invisible="state != 'md_approved'"/>
+                        <button name="action_reset_draft"
+                                string="Reset to Draft"
+                                type="object"
+                                class="btn-secondary"
+                                invisible="state in ['draft','submitted_client']"/>
+                        <field name="state"
+                               widget="statusbar"
+                               statusbar_visible="draft,data_collection,under_review,submitted_md,md_approved,submitted_client"/>
+                    </header>
+
+                    <sheet>
+
+                        <!--
+                            Odoo 17 requires every field used in an invisible/
+                            readonly/required modifier to be declared in the view,
+                            even if it is never shown. Declare them here as hidden.
+                        -->
+                        <field name="deadline_overdue" invisible="1"/>
+                        <field name="all_data_received" invisible="1"/>
+
+                        <!-- Deadline overdue alert -->
+                        <div class="alert alert-danger" role="alert"
+                             invisible="not deadline_overdue">
+                            ⚠️ <strong>Submission deadline has passed</strong> and this document has not yet been submitted to the client.
+                        </div>
+
+                        <!-- MD Revision required alert -->
+                        <div class="alert alert-warning" role="alert"
+                             invisible="state != 'revision'">
+                            🔄 <strong>Revision Required:</strong>
+                            <field name="md_remarks" readonly="1"/>
+                        </div>
+
+                        <!-- Data not ready alert -->
+                        <div class="alert alert-info" role="alert"
+                             invisible="all_data_received or not data_request_ids">
+                            ℹ️ Not all departmental data has been received yet. Check the <strong>Data Requests</strong> tab.
+                        </div>
+
+                        <div class="oe_title">
+                            <label for="name" string="Reference"/>
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+
+                        <group>
+                            <group string="Document Info">
+                                <field name="document_type"/>
+                                <field name="tender_id"/>
+                                <field name="client_id"/>
+                                <field name="currency_id" invisible="1"/>
+                                <field name="tender_value"/>
+                            </group>
+                            <group string="Timeline">
+                                <field name="date_prepared"/>
+                                <field name="client_submission_deadline"/>
+                                <field name="date_submitted_md"
+                                       invisible="state not in ['submitted_md','md_approved','md_rejected','revision','submitted_client']"/>
+                                <field name="date_md_decision"
+                                       invisible="state not in ['md_approved','md_rejected','revision','submitted_client']"/>
+                                <field name="date_submitted_client"
+                                       invisible="state != 'submitted_client'"/>
+                            </group>
+                        </group>
+
+                        <group>
+                            <group string="Responsibility">
+                                <field name="prepared_by"/>
+                                <field name="reviewed_by"/>
+                                <field name="md_id"/>
+                            </group>
+                            <group string="Related Documents">
+                                <field name="estimation_id"/>
+                                <field name="boq_id"/>
+                            </group>
+                        </group>
+
+                        <!-- MD Decision (read-only summary) -->
+                        <group string="MD Decision"
+                               invisible="state not in ['md_approved','md_rejected','revision','submitted_client']">
+                            <field name="md_decision"/>
+                            <field name="md_remarks"/>
+                        </group>
+
+                        <notebook>
+
+                            <!-- Document Content Tab -->
+                            <page string="Document Content">
+                                <group>
+                                    <group string="Inclusions Checklist">
+                                        <field name="company_profile_included"/>
+                                        <field name="financial_statements_included"/>
+                                        <field name="past_projects_included"/>
+                                        <field name="all_data_received" readonly="1"/>
+                                    </group>
+                                </group>
+                                <separator string="Scope of Work"/>
+                                <field name="scope_of_work"
+                                       placeholder="Describe the scope of work as it will appear in the submission..."/>
+                                <separator string="Technical Approach"/>
+                                <field name="technical_approach"
+                                       placeholder="Describe the technical methodology..."/>
+                            </page>
+
+                            <!-- Data Requests Tab -->
+                            <page string="Departmental Data Requests"
+                                  name="data_requests">
+                                <field name="data_request_ids" widget="one2many">
+                                    <tree decoration-success="state == 'received'"
+                                          decoration-warning="state == 'acknowledged'"
+                                          decoration-danger="is_overdue == True"
+                                          decoration-muted="state == 'cancelled'">
+                                        <field name="name" readonly="1"/>
+                                        <field name="department"/>
+                                        <field name="data_type"/>
+                                        <field name="department_contact"/>
+                                        <field name="request_date"/>
+                                        <field name="response_deadline"/>
+                                        <field name="response_date"/>
+                                        <field name="is_overdue" invisible="1"/>
+                                        <field name="priority" widget="priority"/>
+                                        <field name="state"
+                                               widget="badge"
+                                               decoration-success="state == 'received'"
+                                               decoration-warning="state == 'acknowledged'"
+                                               decoration-danger="state == 'sent' and is_overdue"/>
+                                    </tree>
+                                </field>
+                            </page>
+
+                            <!-- Notes & Documents Tab -->
+                            <page string="Notes">
+                                <field name="notes" placeholder="Internal notes..."/>
+                            </page>
+                            <page string="Attachments">
+                                <field name="document_ids" widget="many2many_binary"/>
+                            </page>
+
+                        </notebook>
+                    </sheet>
+
+                    <div class="oe_chatter">
+                        <field name="message_follower_ids"/>
+                        <field name="activity_ids"/>
+                        <field name="message_ids"/>
+                    </div>
+                </form>
+            </field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════════════
+             SEARCH VIEW
+        ══════════════════════════════════════════════════════════ -->
+        <record id="view_contract_prequalification_search" model="ir.ui.view">
+            <field name="name">setraco.contract.prequalification.search</field>
+            <field name="model">setraco.contract.prequalification</field>
+            <field name="arch" type="xml">
+                <search string="Search Pre-Qualification Documents">
+                    <field name="name" string="Reference"/>
+                    <field name="tender_id"/>
+                    <field name="client_id"/>
+                    <field name="prepared_by"/>
+                    <!-- Status Filters -->
+                    <filter name="draft"            string="Draft"                domain="[('state','=','draft')]"/>
+                    <filter name="data_collection"  string="Data Collection"      domain="[('state','=','data_collection')]"/>
+                    <filter name="under_review"     string="Under Review"         domain="[('state','=','under_review')]"/>
+                    <filter name="submitted_md"     string="Submitted to MD"      domain="[('state','=','submitted_md')]"/>
+                    <filter name="md_approved"      string="MD Approved"          domain="[('state','=','md_approved')]"/>
+                    <filter name="submitted_client" string="Submitted to Client"  domain="[('state','=','submitted_client')]"/>
+                    <filter name="md_rejected"      string="MD Rejected"          domain="[('state','=','md_rejected')]"/>
+                    <separator/>
+                    <filter name="overdue"          string="Deadline Overdue"     domain="[('deadline_overdue','=',True)]"/>
+                    <filter name="data_ready"       string="All Data Received"    domain="[('all_data_received','=',True)]"/>
+                    <separator/>
+                    <filter name="preq_type"        string="Pre-Qualification"    domain="[('document_type','=','prequalification')]"/>
+                    <filter name="tender_type"      string="Tender"               domain="[('document_type','=','tender')]"/>
+                    <!-- Group By -->
+                    <group expand="0" string="Group By">
+                        <filter name="group_client"  string="Client"         context="{'group_by':'client_id'}"/>
+                        <filter name="group_tender"  string="Tender"         context="{'group_by':'tender_id'}"/>
+                        <filter name="group_state"   string="Status"         context="{'group_by':'state'}"/>
+                        <filter name="group_type"    string="Document Type"  context="{'group_by':'document_type'}"/>
+                        <filter name="group_month"   string="Month Prepared" context="{'group_by':'date_prepared:month'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <!-- ══════════════════════════════════════════════════════════
+             WINDOW ACTION
+        ══════════════════════════════════════════════════════════ -->
+        <record id="action_contract_prequalification" model="ir.actions.act_window">
+            <field name="name">Pre-Qualification / Tender Documents</field>
+            <field name="res_model">setraco.contract.prequalification</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_contract_prequalification_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No pre-qualification documents yet.
+                </p>
+                <p>Create one when the MD instructs the Contract Department to proceed with a tender.</p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <data>
+
+            <!-- ══════════════════════════════════════════════════════════
+                TREE / LIST VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_handover_tree" model="ir.ui.view">
+                <field name="name">setraco.contract.handover.tree</field>
+                <field name="model">setraco.contract.handover</field>
+                <field name="arch" type="xml">
+                    <tree string="Contract Handovers"
+                        decoration-success="state == 'complete'"
+                        decoration-primary="state == 'project_assigned'"
+                        decoration-warning="state in ['pending_ops','accepted']"
+                        decoration-muted="state == 'draft'">
+                        <field name="name"/>
+                        <field name="contract_id"/>
+                        <field name="client_id"/>
+                        <field name="handover_date"/>
+                        <field name="project_start_date"/>
+                        <field name="project_end_date"/>
+                        <field name="handed_over_by"/>
+                        <field name="received_by"/>
+                        <field name="project_manager_id"/>
+                        <field name="all_documents_submitted" widget="boolean_toggle" string="Docs Ready"/>
+                        <field name="state"
+                            widget="badge"
+                            decoration-success="state == 'complete'"
+                            decoration-primary="state == 'project_assigned'"
+                            decoration-warning="state in ['pending_ops','accepted']"/>
+                    </tree>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                FORM VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_handover_form" model="ir.ui.view">
+                <field name="name">setraco.contract.handover.form</field>
+                <field name="model">setraco.contract.handover</field>
+                <field name="arch" type="xml">
+                    <form string="Contract Handover">
+
+                        <header>
+                            <button name="action_send_to_operations"
+                                    string="Send to Operations"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state != 'draft'"/>
+                            <button name="action_accept_handover"
+                                    string="Accept Handover"
+                                    type="object"
+                                    class="btn-success"
+                                    groups="contract_management.group_contract_operations"
+                                    invisible="state != 'pending_ops'"/>
+                            <button name="action_assign_project"
+                                    string="Assign to Project Dept"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state not in ['accepted','pending_ops']"/>
+                            <button name="action_complete"
+                                    string="Complete Handover"
+                                    type="object"
+                                    class="btn-success"
+                                    invisible="state != 'project_assigned'"/>
+                            <button name="action_reset_draft"
+                                    string="Reset to Draft"
+                                    type="object"
+                                    class="btn-secondary"
+                                    invisible="state in ['draft','complete']"/>
+                            <field name="state"
+                                widget="statusbar"
+                                statusbar_visible="draft,pending_ops,accepted,project_assigned,complete"/>
+                        </header>
+
+                        <sheet>
+
+                            <!-- Docs incomplete warning -->
+                            <div class="alert alert-warning" role="alert"
+                                invisible="all_documents_submitted or not checklist_ids">
+                                ⚠️ Not all checklist documents have been submitted. Complete the checklist before marking this handover as done.
+                            </div>
+
+                            <div class="oe_title">
+                                <label for="name" string="Handover Reference"/>
+                                <h1>
+                                    <field name="name" readonly="1"/>
+                                </h1>
+                            </div>
+
+                            <!-- Main Info -->
+                            <group>
+                                <group string="Contract">
+                                    <field name="contract_id"/>
+                                    <field name="tender_id"/>
+                                    <field name="client_id"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="contract_value"/>
+                                </group>
+                                <group string="Timeline">
+                                    <field name="handover_date"/>
+                                    <field name="project_start_date"/>
+                                    <field name="project_end_date"/>
+                                </group>
+                            </group>
+
+                            <group>
+                                <group string="Responsibility">
+                                    <field name="handed_over_by"/>
+                                    <field name="received_by"/>
+                                    <field name="project_manager_id"/>
+                                </group>
+                                <group string="Odoo Project Link">
+                                    <field name="project_id"/>
+                                    <field name="all_documents_submitted" readonly="1"/>
+                                </group>
+                            </group>
+
+                            <notebook>
+
+                                <!-- Document Checklist Tab -->
+                                <page string="Document Checklist">
+                                    <field name="checklist_ids" widget="one2many">
+                                        <tree editable="bottom"
+                                            decoration-success="is_submitted == True"
+                                            decoration-danger="is_required == True and is_submitted == False">
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="document_name"/>
+                                            <field name="document_type"/>
+                                            <field name="is_required"/>
+                                            <field name="is_submitted" widget="boolean_toggle"/>
+                                            <field name="submitted_date"/>
+                                            <field name="remarks"/>
+                                        </tree>
+                                    </field>
+                                </page>
+
+                                <!-- Contract Summary Tab -->
+                                <page string="Contract Summary">
+                                    <field name="contract_summary"
+                                        placeholder="Summarise contract scope, key obligations, milestones, and important clauses for the Operations team..."/>
+                                </page>
+
+                                <!-- Special Instructions Tab -->
+                                <page string="Instructions to Project Team">
+                                    <field name="special_instructions"
+                                        placeholder="Any special site conditions, client preferences, or critical instructions the Project Manager must be aware of..."/>
+                                </page>
+
+                                <!-- Notes & Documents Tab -->
+                                <page string="Notes">
+                                    <field name="notes"/>
+                                </page>
+                                <page string="Attachments">
+                                    <field name="document_ids" widget="many2many_binary"/>
+                                </page>
+
+                            </notebook>
+                        </sheet>
+
+                        <div class="oe_chatter">
+                            <field name="message_follower_ids"/>
+                            <field name="activity_ids"/>
+                            <field name="message_ids"/>
+                        </div>
+                    </form>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                SEARCH VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_handover_search" model="ir.ui.view">
+                <field name="name">setraco.contract.handover.search</field>
+                <field name="model">setraco.contract.handover</field>
+                <field name="arch" type="xml">
+                    <search string="Search Handovers">
+                        <field name="name" string="Reference"/>
+                        <field name="contract_id"/>
+                        <field name="client_id"/>
+                        <field name="project_manager_id"/>
+                        <field name="received_by"/>
+                        <!-- Status Filters -->
+                        <filter name="draft"            string="Draft"             domain="[('state','=','draft')]"/>
+                        <filter name="pending_ops"      string="Pending Operations" domain="[('state','=','pending_ops')]"/>
+                        <filter name="accepted"         string="Accepted"          domain="[('state','=','accepted')]"/>
+                        <filter name="project_assigned" string="Project Assigned"  domain="[('state','=','project_assigned')]"/>
+                        <filter name="complete"         string="Complete"          domain="[('state','=','complete')]"/>
+                        <separator/>
+                        <filter name="docs_incomplete"  string="Docs Incomplete"
+                                domain="[('all_documents_submitted','=',False)]"/>
+                        <filter name="no_project"       string="No Project Assigned"
+                                domain="[('project_id','=',False),('state','not in',['draft'])]"/>
+                        <!-- Group By -->
+                        <group expand="0" string="Group By">
+                            <filter name="group_contract"  string="Contract"         context="{'group_by':'contract_id'}"/>
+                            <filter name="group_pm"        string="Project Manager"  context="{'group_by':'project_manager_id'}"/>
+                            <filter name="group_state"     string="Status"           context="{'group_by':'state'}"/>
+                            <filter name="group_month"     string="Handover Month"   context="{'group_by':'handover_date:month'}"/>
+                        </group>
+                    </search>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                WINDOW ACTION
+            ══════════════════════════════════════════════════════════ -->
+            <record id="action_contract_handover" model="ir.actions.act_window">
+                <field name="name">Contract Handovers</field>
+                <field name="res_model">setraco.contract.handover</field>
+                <field name="view_mode">tree,form</field>
+                <field name="search_view_id" ref="view_contract_handover_search"/>
+                <field name="help" type="html">
+                    <p class="o_view_nocontent_smiling_face">
+                        No handover records yet.
+                    </p>
+                    <p>Create a handover record once the contract is finalised and ready to be transferred to the Operations and Project teams.</p>
+                </field>
+            </record>
+
+        </data>
+    </odoo>

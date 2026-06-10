@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <data>
+
+            <!-- ══════════════════════════════════════════════════════════
+                TREE / LIST VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_retc_tree" model="ir.ui.view">
+                <field name="name">setraco.contract.retc.tree</field>
+                <field name="model">setraco.contract.retc</field>
+                <field name="arch" type="xml">
+                    <tree string="Revised Estimated Total Costs"
+                        decoration-success="state == 'approved'"
+                        decoration-warning="state == 'submitted'"
+                        decoration-danger="variance_percentage &gt; 20"
+                        decoration-muted="state == 'rejected'">
+                        <field name="name"/>
+                        <field name="contract_id"/>
+                        <field name="revision_number"/>
+                        <field name="revision_date"/>
+                        <field name="revision_reason"/>
+                        <field name="original_estimated_cost"/>
+                        <field name="revised_estimated_cost"/>
+                        <field name="cost_variance"/>
+                        <field name="variance_percentage" widget="percentage" string="Variance %"/>
+                        <field name="prepared_by"/>
+                        <field name="state"
+                            widget="badge"
+                            decoration-success="state == 'approved'"
+                            decoration-warning="state == 'submitted'"
+                            decoration-danger="state == 'rejected'"/>
+                    </tree>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                FORM VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_retc_form" model="ir.ui.view">
+                <field name="name">setraco.contract.retc.form</field>
+                <field name="model">setraco.contract.retc</field>
+                <field name="arch" type="xml">
+                    <form string="Revised Estimated Total Cost (RETC)">
+
+                        <header>
+                            <button name="action_submit"
+                                    string="Submit for MD Approval"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state != 'draft'"/>
+                            <button name="action_approve"
+                                    string="Approve"
+                                    type="object"
+                                    class="btn-success"
+                                    groups="contract_management.group_contract_manager"
+                                    invisible="state != 'submitted'"/>
+                            <button name="action_reject"
+                                    string="Reject"
+                                    type="object"
+                                    class="btn-danger"
+                                    groups="contract_management.group_contract_manager"
+                                    invisible="state != 'submitted'"/>
+                            <button name="action_reset_draft"
+                                    string="Reset to Draft"
+                                    type="object"
+                                    class="btn-secondary"
+                                    invisible="state not in ['submitted','rejected']"/>
+                            <field name="state"
+                                widget="statusbar"
+                                statusbar_visible="draft,submitted,approved"/>
+                        </header>
+
+                        <sheet>
+                            <!-- High variance warning -->
+                            <div class="alert alert-warning" role="alert"
+                                invisible="variance_percentage &lt;= 20">
+                                ⚠️ Cost variance exceeds <strong>20%</strong> of the original estimate. MD review is strongly recommended.
+                            </div>
+
+                            <div class="oe_title">
+                                <label for="name" string="RETC Reference"/>
+                                <h1>
+                                    <field name="name" readonly="1"/>
+                                </h1>
+                            </div>
+
+                            <!-- Header Fields -->
+                            <group>
+                                <group string="Reference">
+                                    <field name="contract_id"/>
+                                    <field name="tender_id"/>
+                                    <field name="revision_number"/>
+                                    <field name="revision_date"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                                <group string="Responsibility">
+                                    <field name="prepared_by"/>
+                                    <field name="approved_by"
+                                        invisible="state not in ['approved','rejected']"/>
+                                    <field name="approval_date"
+                                        invisible="state not in ['approved','rejected']"/>
+                                </group>
+                            </group>
+
+                            <notebook>
+
+                                <!-- Cost Figures Tab -->
+                                <page string="Cost Figures">
+                                    <group>
+                                        <group string="Baseline">
+                                            <field name="original_contract_value"/>
+                                            <field name="original_estimated_cost"/>
+                                            <field name="previous_retc"/>
+                                        </group>
+                                        <group string="Revision">
+                                            <field name="revised_estimated_cost"/>
+                                            <field name="cost_variance"/>
+                                            <field name="variance_percentage" widget="percentage"/>
+                                        </group>
+                                    </group>
+                                </page>
+
+                                <!-- Reason Tab -->
+                                <page string="Revision Reason">
+                                    <group>
+                                        <field name="revision_reason"/>
+                                        <field name="vop_id"
+                                            invisible="revision_reason != 'vop'"/>
+                                    </group>
+                                    <field name="revision_detail"
+                                        placeholder="Provide a full explanation for this cost revision..."/>
+                                </page>
+
+                                <!-- Notes & Docs Tab -->
+                                <page string="Notes">
+                                    <field name="notes"/>
+                                </page>
+                                <page string="Documents">
+                                    <field name="document_ids" widget="many2many_binary"/>
+                                </page>
+
+                            </notebook>
+                        </sheet>
+
+                        <div class="oe_chatter">
+                            <field name="message_follower_ids"/>
+                            <field name="activity_ids"/>
+                            <field name="message_ids"/>
+                        </div>
+                    </form>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                SEARCH VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_retc_search" model="ir.ui.view">
+                <field name="name">setraco.contract.retc.search</field>
+                <field name="model">setraco.contract.retc</field>
+                <field name="arch" type="xml">
+                    <search string="Search RETC">
+                        <field name="name" string="RETC Reference"/>
+                        <field name="contract_id"/>
+                        <field name="tender_id"/>
+                        <field name="prepared_by"/>
+                        <!-- Filters -->
+                        <filter name="draft"     string="Draft"     domain="[('state','=','draft')]"/>
+                        <filter name="submitted" string="Submitted" domain="[('state','=','submitted')]"/>
+                        <filter name="approved"  string="Approved"  domain="[('state','=','approved')]"/>
+                        <filter name="rejected"  string="Rejected"  domain="[('state','=','rejected')]"/>
+                        <separator/>
+                        <filter name="high_variance" string="High Variance (&gt;20%)"
+                                domain="[('variance_percentage','&gt;',20)]"/>
+                        <filter name="material_price" string="Material Price Driven"
+                                domain="[('revision_reason','=','material_price')]"/>
+                        <!-- Group By -->
+                        <group expand="0" string="Group By">
+                            <filter name="group_contract" string="Contract"        context="{'group_by':'contract_id'}"/>
+                            <filter name="group_reason"   string="Revision Reason" context="{'group_by':'revision_reason'}"/>
+                            <filter name="group_state"    string="Status"          context="{'group_by':'state'}"/>
+                            <filter name="group_month"    string="Revision Month"  context="{'group_by':'revision_date:month'}"/>
+                        </group>
+                    </search>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                WINDOW ACTION
+            ══════════════════════════════════════════════════════════ -->
+            <record id="action_contract_retc" model="ir.actions.act_window">
+                <field name="name">Revised Estimated Total Costs</field>
+                <field name="res_model">setraco.contract.retc</field>
+                <field name="view_mode">tree,form</field>
+                <field name="search_view_id" ref="view_contract_retc_search"/>
+                <field name="help" type="html">
+                    <p class="o_view_nocontent_smiling_face">
+                        No RETC records yet.
+                    </p>
+                    <p>Create a RETC when project costs need to be revised due to scope changes, price fluctuations, or VOP adjustments.</p>
+                </field>
+            </record>
+
+        </data>
+    </odoo>

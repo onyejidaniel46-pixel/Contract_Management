@@ -16,7 +16,7 @@
                 <field name="date_submission_deadline"/>
                 <field name="currency_id"/>
                 <templates>
-                    <t t-name="card">
+                    <t t-name="kanban-box">
                         <div class="oe_kanban_global_click">
                             <div class="fw-bold">
                                 <field name="name"/> — <field name="tender_title"/>
@@ -285,12 +285,7 @@
         </field>
     </record>
 
-            <!-- Action for All Tenders -->
-    <record id="action_contract_tender" model="ir.actions.act_window">
-    <field name="name">Tenders</field>
-    <field name="res_model">setraco.contract.tender</field>
-    <field name="view_mode">tree,form</field>
-</record>
+            <!-- Action for All Tenders (kept above) -->
 
 </data>
 </odoo>

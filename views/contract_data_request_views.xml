@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <data>
+
+            <!-- ══════════════════════════════════════════════════════════
+                DATA REQUEST — TREE
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_data_request_tree" model="ir.ui.view">
+                <field name="name">setraco.contract.data.request.tree</field>
+                <field name="model">setraco.contract.data.request</field>
+                <field name="arch" type="xml">
+                    <tree string="Departmental Data Requests"
+                        decoration-success="state == 'received'"
+                        decoration-warning="state == 'acknowledged'"
+                        decoration-danger="is_overdue == True"
+                        decoration-muted="state == 'cancelled'">
+                        <field name="name"/>
+                        <field name="tender_id"/>
+                        <field name="department"/>
+                        <field name="data_type"/>
+                        <field name="department_contact"/>
+                        <field name="request_date"/>
+                        <field name="response_deadline"/>
+                        <field name="response_date"/>
+                        <field name="priority" widget="priority"/>
+                        <field name="is_overdue" invisible="1"/>
+                        <field name="state"
+                            widget="badge"
+                            decoration-success="state == 'received'"
+                            decoration-warning="state == 'acknowledged'"
+                            decoration-danger="is_overdue"/>
+                    </tree>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                DATA REQUEST — FORM
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_data_request_form" model="ir.ui.view">
+                <field name="name">setraco.contract.data.request.form</field>
+                <field name="model">setraco.contract.data.request</field>
+                <field name="arch" type="xml">
+                    <form string="Departmental Data Request">
+
+                        <header>
+                            <button name="action_send"
+                                    string="Send to Department"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state != 'draft'"/>
+                            <button name="action_acknowledge"
+                                    string="Mark Acknowledged"
+                                    type="object"
+                                    class="btn-secondary"
+                                    invisible="state != 'sent'"/>
+                            <button name="action_mark_received"
+                                    string="Mark Response Received"
+                                    type="object"
+                                    class="btn-success"
+                                    invisible="state not in ['sent','acknowledged']"/>
+                            <button name="action_cancel"
+                                    string="Cancel"
+                                    type="object"
+                                    class="btn-danger"
+                                    invisible="state in ['received','cancelled']"/>
+                            <button name="action_reset_draft"
+                                    string="Reset to Draft"
+                                    type="object"
+                                    class="btn-secondary"
+                                    invisible="state in ['draft','received']"/>
+                            <field name="state"
+                                widget="statusbar"
+                                statusbar_visible="draft,sent,acknowledged,received"/>
+                        </header>
+
+                        <sheet>
+
+                            <!-- Overdue alert -->
+                            <div class="alert alert-danger" role="alert"
+                                invisible="not is_overdue">
+                                ⚠️ <strong>Response overdue!</strong> The response deadline has passed and no data has been received from this department.
+                            </div>
+
+                            <div class="oe_title">
+                                <label for="name" string="Request Reference"/>
+                                <h1>
+                                    <field name="name" readonly="1"/>
+                                </h1>
+                                <field name="priority" widget="priority"/>
+                            </div>
+
+                            <group>
+                                <group string="Request Details">
+                                    <field name="tender_id"/>
+                                    <field name="prequalification_id"/>
+                                    <field name="department"/>
+                                    <field name="data_type"/>
+                                </group>
+                                <group string="Responsibility">
+                                    <field name="requested_by"/>
+                                    <field name="department_contact"/>
+                                    <field name="request_date"/>
+                                    <field name="response_deadline"/>
+                                    <field name="response_date"
+                                        invisible="state != 'received'"/>
+                                </group>
+                            </group>
+
+                            <separator string="Request Description"/>
+                            <field name="description"
+                                placeholder="Describe exactly what data is required, including scope, period, or specific line items..."/>
+
+                            <notebook>
+
+                                <!-- Response Tab -->
+                                <page string="Response">
+                                    <group>
+                                        <group string="Response Values">
+                                            <field name="currency_id" invisible="1"/>
+                                            <field name="response_value"
+                                                string="Response Value (non-monetary)"/>
+                                            <field name="response_value_currency"
+                                                string="Response Value (monetary)"/>
+                                        </group>
+                                    </group>
+                                    <separator string="Response Summary"/>
+                                    <field name="response_summary"
+                                        placeholder="Summarise the data provided by the department..."/>
+                                    <separator string="Response Documents"/>
+                                    <field name="response_document_ids" widget="many2many_binary"/>
+                                </page>
+
+                                <!-- Internal Notes Tab -->
+                                <page string="Notes">
+                                    <field name="notes" placeholder="Internal notes..."/>
+                                </page>
+
+                            </notebook>
+                        </sheet>
+
+                        <div class="oe_chatter">
+                            <field name="message_follower_ids"/>
+                            <field name="activity_ids"/>
+                            <field name="message_ids"/>
+                        </div>
+                    </form>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                DATA REQUEST — SEARCH
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_data_request_search" model="ir.ui.view">
+                <field name="name">setraco.contract.data.request.search</field>
+                <field name="model">setraco.contract.data.request</field>
+                <field name="arch" type="xml">
+                    <search string="Search Data Requests">
+                        <field name="name" string="Reference"/>
+                        <field name="tender_id"/>
+                        <field name="department_contact"/>
+                        <!-- Status Filters -->
+                        <filter name="draft"        string="Draft"         domain="[('state','=','draft')]"/>
+                        <filter name="sent"         string="Sent"          domain="[('state','=','sent')]"/>
+                        <filter name="acknowledged" string="Acknowledged"  domain="[('state','=','acknowledged')]"/>
+                        <filter name="received"     string="Received"      domain="[('state','=','received')]"/>
+                        <separator/>
+                        <filter name="overdue"      string="Overdue"       domain="[('is_overdue','=',True)]"/>
+                        <filter name="urgent"       string="Urgent / Critical"
+                                domain="[('priority','in',['1','2'])]"/>
+                        <!-- Department Filters -->
+                        <separator/>
+                        <filter name="dept_cost"     string="Cost Control"  domain="[('department','=','cost_control')]"/>
+                        <filter name="dept_proc"     string="Procurement"   domain="[('department','=','procurement')]"/>
+                        <filter name="dept_plant"    string="Plant"         domain="[('department','=','plant')]"/>
+                        <filter name="dept_pers"     string="Personnel"     domain="[('department','=','personnel')]"/>
+                        <filter name="dept_ops"      string="Operations"    domain="[('department','=','operations')]"/>
+                        <!-- Group By -->
+                        <group expand="0" string="Group By">
+                            <filter name="group_tender"  string="Tender"      context="{'group_by':'tender_id'}"/>
+                            <filter name="group_dept"    string="Department"  context="{'group_by':'department'}"/>
+                            <filter name="group_state"   string="Status"      context="{'group_by':'state'}"/>
+                            <filter name="group_type"    string="Data Type"   context="{'group_by':'data_type'}"/>
+                        </group>
+                    </search>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                DATA REQUEST — WINDOW ACTION
+            ══════════════════════════════════════════════════════════ -->
+            <record id="action_contract_data_request" model="ir.actions.act_window">
+                <field name="name">Departmental Data Requests</field>
+                <field name="res_model">setraco.contract.data.request</field>
+                <field name="view_mode">tree,form</field>
+                <field name="search_view_id" ref="view_contract_data_request_search"/>
+                <field name="context">{'search_default_sent': 1}</field>
+                <field name="help" type="html">
+                    <p class="o_view_nocontent_smiling_face">
+                        No data requests yet.
+                    </p>
+                    <p>Create data requests to collect cost, rate, and price information from departments during tender preparation.</p>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                BATCH DATA REQUEST — TREE
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_data_request_batch_tree" model="ir.ui.view">
+                <field name="name">setraco.contract.data.request.batch.tree</field>
+                <field name="model">setraco.contract.data.request.batch</field>
+                <field name="arch" type="xml">
+                    <tree string="Data Request Batches"
+                        decoration-success="state == 'complete'"
+                        decoration-warning="state == 'dispatched'"
+                        decoration-muted="state == 'draft'">
+                        <field name="name"/>
+                        <field name="tender_id"/>
+                        <field name="response_deadline"/>
+                        <field name="total_requests"/>
+                        <field name="received_count" string="Received"/>
+                        <field name="pending_count"  string="Pending"/>
+                        <field name="state"
+                            widget="badge"
+                            decoration-success="state == 'complete'"
+                            decoration-warning="state == 'dispatched'"/>
+                    </tree>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                BATCH DATA REQUEST — FORM
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_data_request_batch_form" model="ir.ui.view">
+                <field name="name">setraco.contract.data.request.batch.form</field>
+                <field name="model">setraco.contract.data.request.batch</field>
+                <field name="arch" type="xml">
+                    <form string="Batch Data Request">
+
+                        <header>
+                            <button name="action_dispatch_all"
+                                    string="Dispatch All Requests"
+                                    type="object"
+                                    class="btn-primary"
+                                    confirm="This will create and send one data request to each selected department. Continue?"
+                                    invisible="state != 'draft'"/>
+                            <button name="action_check_completion"
+                                    string="Check Completion"
+                                    type="object"
+                                    class="btn-secondary"
+                                    invisible="state != 'dispatched'"/>
+                            <field name="state"
+                                widget="statusbar"
+                                statusbar_visible="draft,dispatched,complete"/>
+                        </header>
+
+                        <sheet>
+                            <!-- Completion summary banner -->
+                            <div class="alert alert-success" role="alert"
+                                invisible="state != 'complete'">
+                                ✅ All departmental responses have been received.
+                            </div>
+                            <div class="alert alert-warning" role="alert"
+                                invisible="state != 'dispatched' or pending_count == 0">
+                                ⏳ <field name="pending_count" readonly="1"/> department response(s) still pending.
+                            </div>
+
+                            <div class="oe_title">
+                                <label for="name" string="Batch Reference"/>
+                                <h1>
+                                    <field name="name" readonly="1"/>
+                                </h1>
+                            </div>
+
+                            <group>
+                                <group string="Batch Details">
+                                    <field name="tender_id"/>
+                                    <field name="prequalification_id"/>
+                                    <field name="response_deadline"/>
+                                </group>
+                                <group string="Progress">
+                                    <field name="total_requests"/>
+                                    <field name="received_count"/>
+                                    <field name="pending_count"/>
+                                </group>
+                            </group>
+
+                            <!-- Department Selection -->
+                            <group string="Departments to Include"
+                                invisible="state != 'draft'">
+                                <group>
+                                    <field name="include_cost_control"/>
+                                    <field name="include_procurement"/>
+                                    <field name="include_plant"/>
+                                </group>
+                                <group>
+                                    <field name="include_personnel"/>
+                                    <field name="include_operations"/>
+                                </group>
+                            </group>
+
+                            <!-- Generated Requests (readonly after dispatch) -->
+                            <notebook invisible="state == 'draft'">
+                                <page string="Generated Requests">
+                                    <field name="data_request_ids" readonly="1">
+                                        <tree decoration-success="state == 'received'"
+                                            decoration-warning="state == 'acknowledged'"
+                                            decoration-danger="is_overdue == True">
+                                            <field name="name"/>
+                                            <field name="department"/>
+                                            <field name="data_type"/>
+                                            <field name="department_contact"/>
+                                            <field name="response_deadline"/>
+                                            <field name="response_date"/>
+                                            <field name="is_overdue" invisible="1"/>
+                                            <field name="state"
+                                                widget="badge"
+                                                decoration-success="state == 'received'"
+                                                decoration-warning="state == 'acknowledged'"
+                                                decoration-danger="is_overdue"/>
+                                        </tree>
+                                    </field>
+                                </page>
+                            </notebook>
+                        </sheet>
+
+                        <div class="oe_chatter">
+                            <field name="message_follower_ids"/>
+                            <field name="message_ids"/>
+                        </div>
+                    </form>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                BATCH — WINDOW ACTION
+            ══════════════════════════════════════════════════════════ -->
+            <record id="action_contract_data_request_batch" model="ir.actions.act_window">
+                <field name="name">Data Request Batches</field>
+                <field name="res_model">setraco.contract.data.request.batch</field>
+                <field name="view_mode">tree,form</field>
+                <field name="help" type="html">
+                    <p class="o_view_nocontent_smiling_face">
+                        No batch requests yet.
+                    </p>
+                    <p>Use a batch to dispatch data requests to all departments at once for a tender.</p>
+                </field>
+            </record>
+
+        </data>
+    </odoo>

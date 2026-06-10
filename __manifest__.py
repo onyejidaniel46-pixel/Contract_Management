@@ -38,7 +38,12 @@
         'views/contract_vop_views.xml',
         'views/contract_cost_alert_views.xml',
         'views/contract_report_views.xml',
+        'views/contract_prequalification_views.xml',
         'views/contract_dashboard_views.xml',
+        'views/contract_boq_views.xml',
+        'views/contract_loi_views.xml',
+        'views/contract_advance_payment_views.xml',
+        'views/contract_retc_views.xml',
         'views/contract_menu_views.xml',
 
         # Wizards

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <data>
+
+            <!-- ══════════════════════════════════════════════════════════
+                TREE / LIST VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_boq_tree" model="ir.ui.view">
+                <field name="name">setraco.contract.boq.tree</field>
+                <field name="model">setraco.contract.boq</field>
+                <field name="arch" type="xml">
+                    <tree string="Bill of Quantities"
+                        decoration-success="state == 'approved'"
+                        decoration-warning="state == 'confirmed'"
+                        decoration-muted="state == 'draft'">
+                        <field name="name"/>
+                        <field name="document_type"/>
+                        <field name="tender_id"/>
+                        <field name="contract_id"/>
+                        <field name="source_department"/>
+                        <field name="date_prepared"/>
+                        <field name="prepared_by"/>
+                        <field name="total_amount" sum="Grand Total"/>
+                        <field name="state"
+                            widget="badge"
+                            decoration-success="state == 'approved'"
+                            decoration-warning="state == 'confirmed'"/>
+                    </tree>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                FORM VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_boq_form" model="ir.ui.view">
+                <field name="name">setraco.contract.boq.form</field>
+                <field name="model">setraco.contract.boq</field>
+                <field name="arch" type="xml">
+                    <form string="Bill of Quantities / Bill of Engineering Material">
+
+                        <header>
+                            <button name="action_confirm"
+                                    string="Confirm"
+                                    type="object"
+                                    class="btn-primary"
+                                    invisible="state != 'draft'"/>
+                            <button name="action_approve"
+                                    string="Approve"
+                                    type="object"
+                                    class="btn-success"
+                                    groups="contract_management.group_contract_manager"
+                                    invisible="state != 'confirmed'"/>
+                            <button name="action_reset_draft"
+                                    string="Reset to Draft"
+                                    type="object"
+                                    class="btn-secondary"
+                                    invisible="state == 'draft'"/>
+                            <field name="state"
+                                widget="statusbar"
+                                statusbar_visible="draft,confirmed,approved"/>
+                        </header>
+
+                        <sheet>
+                            <div class="oe_title">
+                                <label for="name" string="BOQ Reference"/>
+                                <h1>
+                                    <field name="name" readonly="1"/>
+                                </h1>
+                            </div>
+
+                            <!-- Header Info -->
+                            <group>
+                                <group string="Reference">
+                                    <field name="document_type"/>
+                                    <field name="tender_id"/>
+                                    <field name="contract_id"/>
+                                    <field name="estimation_id"/>
+                                </group>
+                                <group string="Preparation">
+                                    <field name="source_department"/>
+                                    <field name="prepared_by"/>
+                                    <field name="date_prepared"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                            </group>
+
+                            <!-- BOQ Line Items -->
+                            <notebook>
+                                <page string="Line Items">
+                                    <field name="line_ids" widget="one2many">
+                                        <tree editable="bottom"
+                                            decoration-info="item_type == 'material'"
+                                            decoration-warning="item_type == 'labor'"
+                                            decoration-success="item_type == 'equipment'">
+                                            <field name="sequence" widget="handle"/>
+                                            <field name="item_type"/>
+                                            <field name="description"/>
+                                            <field name="specification" optional="hide"/>
+                                            <field name="product_id" optional="hide"/>
+                                            <field name="uom_id"/>
+                                            <field name="quantity"/>
+                                            <field name="unit_price"/>
+                                            <field name="subtotal" sum="Total"/>
+                                            <field name="currency_id" invisible="1"/>
+                                            <field name="notes" optional="hide"/>
+                                        </tree>
+                                        <form string="BOQ Line">
+                                            <group>
+                                                <group>
+                                                    <field name="sequence"/>
+                                                    <field name="item_type"/>
+                                                    <field name="description"/>
+                                                    <field name="product_id"/>
+                                                    <field name="uom_id"/>
+                                                </group>
+                                                <group>
+                                                    <field name="quantity"/>
+                                                    <field name="unit_price"/>
+                                                    <field name="subtotal"/>
+                                                    <field name="currency_id" invisible="1"/>
+                                                </group>
+                                            </group>
+                                            <field name="specification" placeholder="Technical specification or detail..."/>
+                                            <field name="notes"/>
+                                        </form>
+                                    </field>
+
+                                    <!-- Total Footer -->
+                                    <group class="oe_subtotal_footer">
+                                        <field name="total_amount"
+                                            string="Grand Total"
+                                            class="oe_subtotal_footer_separator"/>
+                                    </group>
+                                </page>
+
+                                <!-- Notes & Documents Tab -->
+                                <page string="Notes">
+                                    <field name="notes" placeholder="General notes or instructions..."/>
+                                </page>
+                                <page string="Documents">
+                                    <field name="document_ids" widget="many2many_binary"/>
+                                </page>
+                            </notebook>
+                        </sheet>
+
+                        <div class="oe_chatter">
+                            <field name="message_follower_ids"/>
+                            <field name="activity_ids"/>
+                            <field name="message_ids"/>
+                        </div>
+                    </form>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                SEARCH VIEW
+            ══════════════════════════════════════════════════════════ -->
+            <record id="view_contract_boq_search" model="ir.ui.view">
+                <field name="name">setraco.contract.boq.search</field>
+                <field name="model">setraco.contract.boq</field>
+                <field name="arch" type="xml">
+                    <search string="Search BOQ">
+                        <field name="name" string="BOQ Reference"/>
+                        <field name="tender_id"/>
+                        <field name="contract_id"/>
+                        <field name="prepared_by"/>
+                        <!-- Filters -->
+                        <filter name="boq_type"       string="BOQ"       domain="[('document_type','=','boq')]"/>
+                        <filter name="bme_type"       string="BME"       domain="[('document_type','=','bme')]"/>
+                        <separator/>
+                        <filter name="draft"          string="Draft"     domain="[('state','=','draft')]"/>
+                        <filter name="confirmed"      string="Confirmed" domain="[('state','=','confirmed')]"/>
+                        <filter name="approved"       string="Approved"  domain="[('state','=','approved')]"/>
+                        <separator/>
+                        <filter name="procurement"    string="From Procurement" domain="[('source_department','=','procurement')]"/>
+                        <filter name="plant"          string="From Plant"       domain="[('source_department','=','plant')]"/>
+                        <filter name="personnel"      string="From Personnel"   domain="[('source_department','=','personnel')]"/>
+                        <!-- Group By -->
+                        <group expand="0" string="Group By">
+                            <filter name="group_tender"     string="Tender"            context="{'group_by':'tender_id'}"/>
+                            <filter name="group_contract"   string="Contract"          context="{'group_by':'contract_id'}"/>
+                            <filter name="group_dept"       string="Source Department" context="{'group_by':'source_department'}"/>
+                            <filter name="group_type"       string="Document Type"     context="{'group_by':'document_type'}"/>
+                            <filter name="group_state"      string="Status"            context="{'group_by':'state'}"/>
+                        </group>
+                    </search>
+                </field>
+            </record>
+
+            <!-- ══════════════════════════════════════════════════════════
+                WINDOW ACTION
+            ══════════════════════════════════════════════════════════ -->
+            <record id="action_contract_boq" model="ir.actions.act_window">
+                <field name="name">Bill of Quantities</field>
+                <field name="res_model">setraco.contract.boq</field>
+                <field name="view_mode">tree,form</field>
+                <field name="search_view_id" ref="view_contract_boq_search"/>
+                <field name="help" type="html">
+                    <p class="o_view_nocontent_smiling_face">
+                        No BOQ records yet.
+                    </p>
+                    <p>Create a BOQ during the data collection phase to capture material, labour, and equipment quantities and rates for a tender.</p>
+                </field>
+            </record>
+
+        </data>
+    </odoo>

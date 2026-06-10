@@ -70,5 +70,70 @@
             <field name="active">True</field>
         </record>
 
+
+        <record id="seq_contract_loi" model="ir.sequence">
+            <field name="name">Contract LOI</field>
+            <field name="code">setraco.contract.loi</field>
+            <field name="prefix">LOI/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_contract_advance_payment" model="ir.sequence">
+            <field name="name">Contract Advance Payment</field>
+            <field name="code">setraco.contract.advance.payment</field>
+            <field name="prefix">ADV/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_contract_retc" model="ir.sequence">
+            <field name="name">Contract RETC</field>
+            <field name="code">setraco.contract.retc</field>
+            <field name="prefix">RETC/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_contract_boq" model="ir.sequence">
+            <field name="name">Contract BOQ</field>
+            <field name="code">setraco.contract.boq</field>
+            <field name="prefix">BOQ/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_contract_handover" model="ir.sequence">
+            <field name="name">Contract Handover</field>
+            <field name="code">setraco.contract.handover</field>
+            <field name="prefix">HO/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_contract_prequalification" model="ir.sequence">
+            <field name="name">Contract Pre-Qualification</field>
+            <field name="code">setraco.contract.prequalification</field>
+            <field name="prefix">PQ/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_contract_data_request" model="ir.sequence">
+            <field name="name">Contract Data Request</field>
+            <field name="code">setraco.contract.data.request</field>
+            <field name="prefix">DR/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="seq_contract_data_request_batch" model="ir.sequence">
+            <field name="name">Contract Data Request Batch</field>
+            <field name="code">setraco.contract.data.request.batch</field>
+            <field name="prefix">DRB/%(year)s/</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
     </data>
 </odoo>
