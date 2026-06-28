@@ -47,3 +47,4 @@ access_dr_user,dr.user,model_setraco_contract_data_request,contract_management.g
 access_dr_manager,dr.manager,model_setraco_contract_data_request,contract_management.group_contract_manager,1,1,1,1
 access_drb_user,drb.user,model_setraco_contract_data_request_batch,contract_management.group_contract_user,1,1,1,0
 access_drb_manager,drb.manager,model_setraco_contract_data_request_batch,contract_management.group_contract_manager,1,1,1,1
+access_contract_dashboard,setraco.contract.dashboard,model_setraco_contract_dashboard,contract_management.group_contract_user,1,1,1,1

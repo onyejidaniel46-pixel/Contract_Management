@@ -10,7 +10,7 @@
 
         <record id="view_contract_dashboard_form" model="ir.ui.view">
         <field name="name">setraco.contract.dashboard.form</field>
-        <field name="model">setraco.contract.tender</field>
+        <field name="model">setraco.contract.dashboard</field>
         <field name="priority">999</field>
         <field name="arch" type="xml">
             <form string="Contract Dashboard" create="false" edit="false">
@@ -23,45 +23,59 @@
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
                     <div class="card text-white bg-primary h-100 text-center p-3">
                     <div style="font-size:28px; font-weight:700;">
-                        <field name="id" invisible="1"/>
-                        <!-- counts rendered via JS / ir.actions; shown as static labels here -->
-                        Active Tenders
+                        <field name="active_tender_count" readonly="1" nolabel="1"/>
                     </div>
+                    <div class="small mt-1">Active Tenders</div>
                     <div class="small mt-1">Open in pipeline</div>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
                     <div class="card text-white bg-success h-100 text-center p-3">
-                    <div style="font-size:28px; font-weight:700;">Contracts</div>
+                    <div style="font-size:28px; font-weight:700;">
+                        <field name="contract_count" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="small mt-1">Contracts</div>
                     <div class="small mt-1">Signed &amp; active</div>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
                     <div class="card text-white bg-warning h-100 text-center p-3">
-                    <div style="font-size:28px; font-weight:700;">Pending MD</div>
+                    <div style="font-size:28px; font-weight:700;">
+                        <field name="pending_md_count" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="small mt-1">Pending MD</div>
                     <div class="small mt-1">Awaiting approval</div>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
                     <div class="card text-white bg-danger h-100 text-center p-3">
-                    <div style="font-size:28px; font-weight:700;">Overdue Claims</div>
+                    <div style="font-size:28px; font-weight:700;">
+                        <field name="overdue_claims_count" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="small mt-1">Overdue Claims</div>
                     <div class="small mt-1">Payment overdue</div>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
                     <div class="card text-white bg-info h-100 text-center p-3">
-                    <div style="font-size:28px; font-weight:700;">Cost Alerts</div>
+                    <div style="font-size:28px; font-weight:700;">
+                        <field name="cost_alert_count" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="small mt-1">Cost Alerts</div>
                     <div class="small mt-1">Threshold breaches</div>
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
                     <div class="card text-white bg-secondary h-100 text-center p-3">
-                    <div style="font-size:28px; font-weight:700;">VOP Open</div>
+                    <div style="font-size:28px; font-weight:700;">
+                        <field name="vop_open_count" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="small mt-1">VOP Open</div>
                     <div class="small mt-1">Pending approval</div>
                     </div>
                 </div>
@@ -71,14 +85,13 @@
                 <!-- ── Tender Pipeline (status breakdown validate status) ── -->
                 <div class="o_horizontal_separator mt16 mb8">Tender Pipeline</div>
                 <div class="row">
-                <div class="col-12">
+                <div class="col-13">
                     <p class="text-muted">
                     Use the <strong>Tenders</strong> menu to see the full Kanban pipeline
                     grouped by stage. The dashboard tiles above link to filtered list views.
                     </p>
                 </div>
                 </div>
-
                 <!-- ── Quick Links ── -->
                 <div class="o_horizontal_separator mt16 mb8">Quick Actions</div>
                 <div class="row mb-3">
@@ -125,9 +138,10 @@
         <!-- Action for Dashboard Form -->
         <record id="action_contract_dashboard" model="ir.actions.act_window">
             <field name="name">Dashboard</field>
-            <field name="res_model">setraco.contract.Tender</field>
+            <field name="res_model">setraco.contract.dashboard</field>
             <field name="view_mode">form</field>
             <field name="view_id" ref="view_contract_dashboard_form"/>
+            <field name="context">{'create': False}</field>
             <field name="target">current</field>
         </record>
 

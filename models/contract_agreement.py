@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from . import contract_dashboard
 
 
 class ContractAgreement(models.Model):
@@ -247,3 +248,182 @@ class ContractRETCHistory(models.Model):
         for rec in records:
             rec.agreement_id.write({'retc': rec.new_retc})
         return records
+
+
+class ContractDashboardInherit(models.TransientModel):
+    _inherit = 'setraco.contract.dashboard'
+
+    active_tenders_count = fields.Integer(compute='_compute_dashboard_data', string='Active Tenders')
+    contracts_count = fields.Integer(compute='_compute_dashboard_data', string='Active Contracts')
+    pending_md_count = fields.Integer(compute='_compute_dashboard_data', string='Pending MD Tenders')
+    overdue_claims_count = fields.Integer(compute='_compute_dashboard_data', string='Overdue Claims')
+    cost_alerts_count = fields.Integer(compute='_compute_dashboard_data', string='Triggered Cost Alerts')
+    vop_open_count = fields.Integer(compute='_compute_dashboard_data', string='VOP Open')
+
+    def _compute_dashboard_data(self):
+        for rec in self:
+            rec.active_tenders_count = self.env['setraco.contract.tender'].search_count([
+                ('state', 'not in', ['cancelled', 'handover'])
+            ])
+            rec.contracts_count = self.env['setraco.contract.agreement'].search_count([
+                ('state', 'in', ['active', 'claims', 'final_cert', 'maintenance'])
+            ])
+            rec.pending_md_count = self.env['setraco.contract.tender'].search_count([
+                ('state', '=', 'md_review')
+            ])
+            rec.overdue_claims_count = self.env['setraco.contract.claim'].search_count([
+                ('state', 'in', ['submitted', 'certified']),
+                ('payment_due_date', '<', fields.Date.today())
+            ])
+            rec.cost_alerts_count = self.env['setraco.contract.cost.alert'].search_count([
+                ('state', '=', 'triggered')
+            ])
+            rec.vop_open_count = self.env['setraco.contract.vop'].search_count([
+                ('state', '=', 'submitted')
+            ])
+
+    @api.model
+    def get_views(self, views, options=None):
+        res = super().get_views(views, options=options)
+        if 'form' in res.get('views', {}):
+            arch = res['views']['form']['arch']
+            import re
+            
+            new_kpis_xml = """<div class="row o_dashboard">
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <button type="object" name="action_open_active_tenders" class="btn p-0 border-0 w-100 text-start text-white">
+                        <div class="card text-white bg-primary h-100 text-center p-3">
+                            <div style="font-size:36px; font-weight:700; line-height: 1.2;">
+                                <field name="active_tenders_count" readonly="1"/>
+                            </div>
+                            <div style="font-size:16px; font-weight:600;" class="mt-1">Active Tenders</div>
+                            <div class="small mt-1">Open in pipeline</div>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <button type="object" name="action_open_contracts" class="btn p-0 border-0 w-100 text-start text-white">
+                        <div class="card text-white bg-success h-100 text-center p-3">
+                            <div style="font-size:36px; font-weight:700; line-height: 1.2;">
+                                <field name="contracts_count" readonly="1"/>
+                            </div>
+                            <div style="font-size:16px; font-weight:600;" class="mt-1">Contracts</div>
+                            <div class="small mt-1">Signed &amp; active</div>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <button type="object" name="action_open_pending_md" class="btn p-0 border-0 w-100 text-start text-white">
+                        <div class="card text-white bg-warning h-100 text-center p-3">
+                            <div style="font-size:36px; font-weight:700; line-height: 1.2;">
+                                <field name="pending_md_count" readonly="1"/>
+                            </div>
+                            <div style="font-size:16px; font-weight:600;" class="mt-1">Pending MD</div>
+                            <div class="small mt-1">Awaiting approval</div>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <button type="object" name="action_open_overdue_claims" class="btn p-0 border-0 w-100 text-start text-white">
+                        <div class="card text-white bg-danger h-100 text-center p-3">
+                            <div style="font-size:36px; font-weight:700; line-height: 1.2;">
+                                <field name="overdue_claims_count" readonly="1"/>
+                            </div>
+                            <div style="font-size:16px; font-weight:600;" class="mt-1">Overdue Claims</div>
+                            <div class="small mt-1">Payment overdue</div>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <button type="object" name="action_open_cost_alerts" class="btn p-0 border-0 w-100 text-start text-white">
+                        <div class="card text-white bg-info h-100 text-center p-3">
+                            <div style="font-size:36px; font-weight:700; line-height: 1.2;">
+                                <field name="cost_alerts_count" readonly="1"/>
+                            </div>
+                            <div style="font-size:16px; font-weight:600;" class="mt-1">Cost Alerts</div>
+                            <div class="small mt-1">Threshold breaches</div>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <button type="object" name="action_open_vop_pending" class="btn p-0 border-0 w-100 text-start text-white">
+                        <div class="card text-white bg-secondary h-100 text-center p-3">
+                            <div style="font-size:36px; font-weight:700; line-height: 1.2;">
+                                <field name="vop_open_count" readonly="1"/>
+                            </div>
+                            <div style="font-size:16px; font-weight:600;" class="mt-1">VOP Open</div>
+                            <div class="small mt-1">Pending approval</div>
+                        </div>
+                    </button>
+                </div>
+            </div>"""
+            
+            # Replace the old static row with the new dynamic XML row
+            res['views']['form']['arch'] = re.sub(
+                r'<div class="row o_dashboard">.*?</div>\s*<!--\s*/row\s*-->',
+                new_kpis_xml,
+                arch,
+                flags=re.DOTALL
+            )
+        return res
+
+    def action_open_active_tenders(self):
+        return {
+            'name': 'Active Tenders',
+            'type': 'ir.actions.act_window',
+            'res_model': 'setraco.contract.tender',
+            'view_mode': 'kanban,tree,form',
+            'domain': [('state', 'not in', ['cancelled', 'handover'])],
+            'context': {'search_default_active': 1},
+            'target': 'current',
+        }
+
+    def action_open_contracts(self):
+        return {
+            'name': 'Contract Agreements',
+            'type': 'ir.actions.act_window',
+            'res_model': 'setraco.contract.agreement',
+            'view_mode': 'tree,form',
+            'domain': [('state', 'in', ['active', 'claims', 'final_cert', 'maintenance'])],
+            'target': 'current',
+        }
+
+    def action_open_pending_md(self):
+        return {
+            'name': 'Tenders Pending MD Approval',
+            'type': 'ir.actions.act_window',
+            'res_model': 'setraco.contract.tender',
+            'view_mode': 'tree,form',
+            'domain': [('state', '=', 'md_review')],
+            'target': 'current',
+        }
+
+    def action_open_overdue_claims(self):
+        return {
+            'name': 'Overdue Claims Certificates',
+            'type': 'ir.actions.act_window',
+            'res_model': 'setraco.contract.claim',
+            'view_mode': 'tree,form',
+            'domain': [('state', 'in', ['submitted', 'certified']), ('payment_due_date', '<', fields.Date.today())],
+            'target': 'current',
+        }
+
+    def action_open_cost_alerts(self):
+        return {
+            'name': 'Triggered Cost Alerts',
+            'type': 'ir.actions.act_window',
+            'res_model': 'setraco.contract.cost.alert',
+            'view_mode': 'tree,form',
+            'domain': [('state', '=', 'triggered')],
+            'target': 'current',
+        }
+
+    def action_open_vop_pending(self):
+        return {
+            'name': 'Pending Variation of Price (VOP)',
+            'type': 'ir.actions.act_window',
+            'res_model': 'setraco.contract.vop',
+            'view_mode': 'tree,form',
+            'domain': [('state', '=', 'submitted')],
+            'target': 'current',
+        }
