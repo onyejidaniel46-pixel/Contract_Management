@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120">
+  <defs>
+    <style>
+      .green1{fill:#7fb514}
+      .green2{fill:#1b7a4a}
+      .text{font-family:Arial,Helvetica,sans-serif;font-weight:700;letter-spacing:1px}
+    </style>
+  </defs>
+  <!-- left emblem -->
+  <rect x="0" y="0" width="120" height="120" rx="4" class="green2"/>
+  <rect x="0" y="0" width="60" height="120" rx="0" class="green1"/>
+  <!-- simple bird silhouette (stylized) -->
+  <path d="M45 20 C35 26, 30 40, 38 52 C46 64, 58 70, 68 72 C74 73, 78 80, 74 86 C70 92, 58 96, 46 94 C34 92, 28 84, 26 76 C24 68, 26 60, 32 54 C38 48, 52 44, 62 46 C72 48, 80 56, 84 66 C88 76, 92 86, 98 90 L100 92 L100 20 Z" fill="#fff" transform="translate(0,0) scale(0.6)"/>
+  <!-- text -->
+  <g transform="translate(140,28)">
+    <text x="0" y="28" font-size="34" class="text" fill="#1b7a4a">SETRACO</text>
+    <text x="0" y="62" font-size="18" class="text" fill="#7fb514">NIGERIA LIMITED</text>
+  </g>
+</svg>

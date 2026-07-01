@@ -53,6 +53,7 @@
         # Reports
         'reports/contract_tender_report.xml',
         'reports/contract_claim_certificate.xml',
+        'reports/contract_agreement_report.xml',
     ],
 
     'installable': True,
